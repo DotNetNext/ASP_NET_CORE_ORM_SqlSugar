@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyConfiguration("作者:孙凯旋，蓝灯软件架构师")]
+[assembly: AssemblyCompany("上海蓝灯软件有限公司")]
 [assembly: AssemblyProduct("SqlSugarForCore")]
 [assembly: AssemblyTrademark("")]
 
