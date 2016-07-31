@@ -17,7 +17,7 @@ namespace SqlSugarTest
                 var dt = db.GetDataTable("select * from student where id=@id", new { id = 1 });
 
                 //设置执行的DEMO
-                string switch_on = "CreateClass";
+                string switch_on = "EnumType";
 
                 IDemos demo = null;
                 switch (switch_on)
@@ -36,9 +36,17 @@ namespace SqlSugarTest
                     case "Tran": demo = new Tran(); break;
                     //生成实体
                     case "CreateClass": demo = new CreateClass(); break;
+                    //枚举类型的支持
+                    case "EnumType": demo = new EnumType(); break;
+
+                    //除了多库并行计算外的所有功能都已经移植成功更多例子请关注我的博客
+
                 }
                 //执行DEMO
                 demo.Init();
+
+                Console.WriteLine("执行成功请关闭窗口");
+                Console.ReadKey();
             }
         }
     }
