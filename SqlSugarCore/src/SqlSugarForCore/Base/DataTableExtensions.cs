@@ -204,7 +204,10 @@ namespace SqlSugar
         public bool MoveNext()
         {
             index++;
-            return index < Rows.Count;
+            var isNext = index < Rows.Count;
+            if (!isNext)
+                Reset();
+            return isNext;
         }
 
         public void Reset()

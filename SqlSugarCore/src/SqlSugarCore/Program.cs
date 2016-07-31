@@ -22,6 +22,7 @@ namespace SqlSugarTest
                 {
                     //ADO.NET基本功能
                     case "Ado": demo = new Ado(); break;
+                    //查询DEMO
                     case "Select": demo = new Select(); break;
                 }
 
