@@ -7,119 +7,246 @@ using System.Threading.Tasks;
 
 namespace SqlSugar
 {
+    /// <summary>
+    /// 作者：sunkaixuan 
+    /// 创建时间：2016/7/31
+    /// 修改时间：-
+    /// 说明：让.netCore支持DataTable
+    /// </summary>
     public class DataTable
     {
-        public DataColumnCollection Columns { get; }
+        public DataColumnCollection Columns = new DataColumnCollection();
 
-        public DataRowCollection Rows { get; }
+        public DataRowCollection Rows = new DataRowCollection();
     }
+
     public class DataColumn
     {
+        public DataColumn()
+        {
+
+        }
+        public DataColumn(string columnName)
+        {
+            this.ColumnName = columnName;
+        }
+        public DataColumn(string columnName, object dataType)
+        {
+            this.ColumnName = columnName;
+            this.DataType = DataType;
+        }
         public string ColumnName { get; internal set; }
         public object DataType { get; internal set; }
     }
-    public class DataColumnCollection : IEnumerable, ICollection
+
+    public class DataColumnCollection : IEnumerable, ICollection, IEnumerator
     {
+        public DataColumn this[int thisIndex]
+        {
+            get
+            {
+                return cols[thisIndex];
+            }
+        }
+        private int index = -1;
+        private List<DataColumn> cols;
         public int Count
         {
             get
             {
-                throw new NotImplementedException();
+                if (this.cols == null)
+                {
+                    this.cols = new List<DataColumn>();
+                }
+                return this.cols.Count;
             }
+        }
+
+        public void Add(DataColumn col)
+        {
+            if (this.cols == null)
+            {
+                this.cols = new List<DataColumn>();
+            }
+            this.cols.Add(col);
         }
 
         public bool IsSynchronized
         {
             get
             {
-                throw new NotImplementedException();
+                return true;
             }
         }
 
         public object SyncRoot
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        //
-        // 摘要:
-        //     获取该集合的 System.Collections.IEnumerator。
-        //
-        // 返回结果:
-        //     该集合的 System.Collections.IEnumerator。
-        public IEnumerator GetEnumerator()
-        {
-            return null;
-        }
-    }
-
-    public class DataRowCollection : IEnumerable, ICollection
-    {
-        public int Count
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public bool IsSynchronized
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public object SyncRoot
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        //
-        // 摘要:
-        //     获取该集合的 System.Collections.IEnumerator。
-        //
-        // 返回结果:
-        //     该集合的 System.Collections.IEnumerator。
-        public IEnumerator GetEnumerator()
-        {
-            return null;
-        }
-    }
-
-    public class DataRow
-    {
-        private object[] arr = new object[100];
-        public object this[string name]
         {
             get
             {
                 return null;
             }
-            set
-            {
+        }
 
+        public object Current
+        {
+            get
+            {
+                return cols[index];
             }
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        //
+        // 摘要:
+        //     获取该集合的 System.Collections.IEnumerator。
+        //
+        // 返回结果:
+        //     该集合的 System.Collections.IEnumerator。
+        public IEnumerator GetEnumerator()
+        {
+            return (IEnumerator)this; ;
+        }
+
+        public bool MoveNext()
+        {
+            index++;
+            return index < cols.Count;
+        }
+
+        public void Reset()
+        {
+            index = -1;
         }
     }
 
+    public class DataRowCollection : IEnumerable, ICollection, IEnumerator
+    {
+
+        public DataRow this[int thisIndex]
+        {
+            get
+            {
+                return Rows[thisIndex];
+            }
+        }
+
+        private int index = -1;
+        private List<DataRow> Rows = null;
+        public int Count
+        {
+            get
+            {
+                if (this.Rows == null)
+                {
+                    this.Rows = new List<DataRow>();
+                }
+                return Rows.Count;
+            }
+        }
+
+        public object Current
+        {
+            get
+            {
+                if (this.Rows == null)
+                {
+                    this.Rows = new List<DataRow>();
+                }
+                return Rows[index];
+            }
+        }
+
+        public bool IsSynchronized
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public object SyncRoot
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public void CopyTo(Array array, int index)
+        {
+            throw new NotImplementedException();
+        }
+
+        //
+        // 摘要:
+        //     获取该集合的 System.Collections.IEnumerator。
+        //
+        // 返回结果:
+        //     该集合的 System.Collections.IEnumerator。
+        public IEnumerator GetEnumerator()
+        {
+            return (IEnumerator)this; ;
+        }
+
+        public bool MoveNext()
+        {
+            index++;
+            return index < Rows.Count;
+        }
+
+        public void Reset()
+        {
+            index = -1;
+        }
+
+        internal void Add(DataRow daRow)
+        {
+            if (Rows == null) {
+                Rows = new List<DataRow>();
+            }
+            Rows.Add(daRow);
+        }
+    }
+
+    public class DataRow
+    {
+        private Dictionary<string, object> obj = new Dictionary<string, object>();
+
+        public void Add(string key, object value)
+        {
+            obj.Add(key, value);
+        }
+
+        public object this[string name]
+        {
+            get
+            {
+                return obj[name];
+            }
+        }
+        public object this[int index]
+        {
+            get
+            {
+                int i = 0;
+                object reval = null;
+                foreach (var item in obj)
+                {
+                    if (i == index)
+                    {
+                        reval = item.Value;
+                        break;
+                    }
+                    i++;
+                }
+                return reval;
+            }
+        }
+    }
 
     public class SqlDataAdapter
     {
@@ -138,11 +265,43 @@ namespace SqlSugar
             this._sqlConnection = _sqlConnection;
         }
 
-        public SqlCommand SelectCommand { get; internal set; }
-
-        internal void Fill(DataTable dt)
+        public SqlCommand SelectCommand
         {
-            throw new NotImplementedException();
+            get
+            {
+                if (this.command == null) {
+                    this.command = new SqlCommand(this.sql, this._sqlConnection);
+                }
+                return this.command;
+            }
+        }
+
+        public void Fill(DataTable dt)
+        {
+            if (dt == null)
+            {
+                dt = new DataTable();
+            }
+            var columns = dt.Columns;
+            var rows = dt.Rows;
+            using (SqlDataReader dr = command.ExecuteReader())
+            {
+                for (int i = 0; i < dr.FieldCount; i++)
+                {
+                    columns.Add(new DataColumn(dr.GetName(i).Trim(), dr.GetFieldType(i)));
+                }
+
+                while (dr.Read())
+                {
+                    DataRow daRow = new DataRow();
+                    for (int i = 0; i < dr.FieldCount; i++)
+                    {
+                        daRow.Add(columns[i].ColumnName, dr.GetValue(i));
+                    }
+                    dt.Rows.Add(daRow);
+                }
+            }
+
         }
     }
 }
