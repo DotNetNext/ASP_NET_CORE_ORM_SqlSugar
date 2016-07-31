@@ -33,7 +33,7 @@ namespace SqlSugar
         public DataColumn(string columnName, object dataType)
         {
             this.ColumnName = columnName;
-            this.DataType = DataType;
+            this.DataType = dataType;
         }
         public string ColumnName { get; internal set; }
         public object DataType { get; internal set; }
@@ -114,12 +114,21 @@ namespace SqlSugar
         public bool MoveNext()
         {
             index++;
-            return index < cols.Count;
+            var isNext = index < cols.Count;
+            if (!isNext)
+                Reset();
+            return isNext;
         }
 
         public void Reset()
         {
             index = -1;
+        }
+
+        public bool ContainsKey(string name)
+        {
+            if (this.cols == null) return false;
+            return (this.cols.Any(it => it.ColumnName == name));
         }
     }
 
@@ -205,7 +214,8 @@ namespace SqlSugar
 
         internal void Add(DataRow daRow)
         {
-            if (Rows == null) {
+            if (Rows == null)
+            {
                 Rows = new List<DataRow>();
             }
             Rows.Add(daRow);
@@ -246,6 +256,12 @@ namespace SqlSugar
                 return reval;
             }
         }
+
+        public bool ContainsKey(string columnName)
+        {
+            if (this.obj == null) return false;
+            return (this.obj.ContainsKey(columnName));
+        }
     }
 
     public class SqlDataAdapter
@@ -269,7 +285,8 @@ namespace SqlSugar
         {
             get
             {
-                if (this.command == null) {
+                if (this.command == null)
+                {
                     this.command = new SqlCommand(this.sql, this._sqlConnection);
                 }
                 return this.command;
@@ -288,15 +305,18 @@ namespace SqlSugar
             {
                 for (int i = 0; i < dr.FieldCount; i++)
                 {
-                    columns.Add(new DataColumn(dr.GetName(i).Trim(), dr.GetFieldType(i)));
+                    string name = dr.GetName(i).Trim();
+                    if (!columns.ContainsKey(name))
+                        columns.Add(new DataColumn(name, dr.GetFieldType(i)));
                 }
 
                 while (dr.Read())
                 {
                     DataRow daRow = new DataRow();
-                    for (int i = 0; i < dr.FieldCount; i++)
+                    for (int i = 0; i < columns.Count; i++)
                     {
-                        daRow.Add(columns[i].ColumnName, dr.GetValue(i));
+                        if (!daRow.ContainsKey(columns[i].ColumnName))
+                            daRow.Add(columns[i].ColumnName, dr.GetValue(i));
                     }
                     dt.Rows.Add(daRow);
                 }

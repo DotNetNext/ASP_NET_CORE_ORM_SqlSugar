@@ -140,27 +140,27 @@ namespace SqlSugar
                 {
                     if (SqlSugarTool.DicOO == type)
                     {
-                        var kv = new KeyValuePair<object, object>((object)Convert.ChangeType(re.GetValue(0), typeof(object)), (int)Convert.ChangeType(re.GetValue(1), typeof(object)));
+                        var kv = new KeyValuePair<object, object>(dr.GetValue(0), re.GetValue(1));
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<object, object>)));
                     }
                     else if (SqlSugarTool.Dicii == type)
                     {
-                        var kv = new KeyValuePair<int, int>((int)Convert.ChangeType(re.GetValue(0), typeof(int)), (int)Convert.ChangeType(re.GetValue(1), typeof(int)));
+                        var kv = new KeyValuePair<int, int>(dr.GetValue(0).TryToInt(), re.GetValue(1).TryToInt());
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<int, int>)));
                     }
                     else if (SqlSugarTool.DicSi == type)
                     {
-                        var kv = new KeyValuePair<string, int>((string)Convert.ChangeType(re.GetValue(0), typeof(string)), (int)Convert.ChangeType(re.GetValue(1), typeof(int)));
+                        var kv = new KeyValuePair<string, int>(dr.GetValue(0).TryToString(), re.GetValue(1).TryToInt());
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, int>)));
                     }
                     else if (SqlSugarTool.DicSo == type)
                     {
-                        var kv = new KeyValuePair<string, object>((string)Convert.ChangeType(re.GetValue(0), typeof(string)), (object)Convert.ChangeType(re.GetValue(1), typeof(object)));
+                        var kv = new KeyValuePair<string, object>(dr.GetValue(0).TryToString(), re.GetValue(1));
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, object>)));
                     }
                     else if (SqlSugarTool.DicSS == type)
                     {
-                        var kv = new KeyValuePair<string, string>((string)Convert.ChangeType(re.GetValue(0), typeof(string)), (string)Convert.ChangeType(re.GetValue(1), typeof(string)));
+                        var kv = new KeyValuePair<string, string>(dr.GetValue(0).TryToString(),dr.GetValue(1).TryToString());
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, string>)));
                     }
                     else
