@@ -122,7 +122,14 @@ namespace {1}
 
         private string ChangeType(object dataType)
         {
-            throw new NotImplementedException();
+            var type = (Type)dataType;
+            string typeName = type.Name;
+            switch (typeName)
+            {
+                case "Int32": typeName = "int"; break;
+                case "String": typeName = "string"; break;
+            }
+            return typeName;
         }
 
 
@@ -137,12 +144,7 @@ namespace {1}
         {
             using (SqlConnection conn = new SqlConnection(db.ConnectionString))
             {
-                SqlCommand command = new SqlCommand();
-                command.Connection = conn;
-                command.CommandText = sql;
-                DataTable dt = new DataTable();
-                SqlDataAdapter sad = new SqlDataAdapter(command);
-                sad.Fill(dt);
+                var dt = db.GetDataTable(sql);
                 var reval = DataTableToClass(dt, className);
                 return reval;
             }
