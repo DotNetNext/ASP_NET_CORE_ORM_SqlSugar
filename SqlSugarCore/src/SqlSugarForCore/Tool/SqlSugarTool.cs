@@ -179,26 +179,23 @@ namespace SqlSugar
                 while (re.Read())
                 {
                     object[] array = new object[count];
-                    for (int i = 0; i < count; i++)
-                    {
-                        array[i] = Convert.ChangeType(re.GetValue(i), childType);
-                    }
+            
                     if (childType == SqlSugarTool.StringType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (string)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToString()).ToArray(), type));
                     else if (childType == SqlSugarTool.ObjType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (object)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it).ToArray(), type));
                     else if (childType == SqlSugarTool.BoolType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (bool)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToBoolean()).ToArray(), type));
                     else if (childType == SqlSugarTool.ByteType)
                         strReval.Add((T)Convert.ChangeType(array.Select(it => (byte)it).ToArray(), type));
                     else if (childType == SqlSugarTool.DecType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (decimal)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToDecimal()).ToArray(), type));
                     else if (childType == SqlSugarTool.GuidType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (Guid)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToGuid()).ToArray(), type));
                     else if (childType == SqlSugarTool.DateType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (DateTime)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToDate()).ToArray(), type));
                     else if (childType == SqlSugarTool.IntType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (int)it).ToArray(), type));
+                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToInt()).ToArray(), type));
                     else
                         Check.Exception(true, "暂时不支持该类型的Array 你可以试试 object[] 或者联系作者！！");
                 }
