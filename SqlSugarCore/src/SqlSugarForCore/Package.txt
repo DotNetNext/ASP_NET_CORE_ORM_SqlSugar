@@ -1,0 +1,22 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Package</id>
+    <version>1.0.0</version>
+    <authors>sunkaixuan</authors>
+    <owners>Landa</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>http://www.cnblogs.com/sunkaixuan/</projectUrl>
+    <iconUrl>http://pic.cnblogs.com/avatar/746906/20150419211858.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Asp.net Core ORM</description>
+    <copyright>Copyright 2016</copyright>
+    <tags>Asp.net core orm</tags>
+    <dependencies>
+      <dependency id="SampleDependency" version="1.0" />
+    </dependencies>
+  </metadata>
+  <files>
+   <file src="c:\Users\ss去\OneDrive\Asp.net\Project\SqlSugarCore\SqlSugarCore\src\SqlSugarForCore\bin\Debug\netstandard1.6\SqlSugarForCore.dll" target="lib\netstandard1.6"></file>
+  </files>
+</package>
