@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("作者:孙凯旋，蓝灯软件架构师")]
 [assembly: AssemblyCompany("上海蓝灯软件有限公司")]
-[assembly: AssemblyProduct("SqlSugarForCore 1.0")]
+[assembly: AssemblyProduct("SqlSugarForCore 1.0.4")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
