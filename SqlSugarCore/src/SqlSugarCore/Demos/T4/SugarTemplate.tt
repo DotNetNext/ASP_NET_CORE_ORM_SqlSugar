@@ -12,17 +12,7 @@
 
 <# 
      
-
-    //当前项目目录
-    string projectDir = Host.ResolveAssemblyReference("$(ProjectDir)");
-
-	//解决方案目录
-    string solutionDir = Host.ResolveAssemblyReference("$(SolutionDir)");
-
  
-	  SqlSugarClient db = new SqlSugarClient("server=.;Initial Catalog=SqlSugarTest;Persist Security Info=True;User ID=sa;Password=sasa") ;
- 
-      db.ClassGenerating.CreateClassFiles(db, "E://T4/MySql/Models","Models");  
 
       
 #>
