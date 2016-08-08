@@ -1,0 +1,28 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="SqlSugar" #>
+<#@ import namespace="System.Runtime" #>
+<#@ assembly name="$(ProjectDir)\Demos\T4\SqlSugarForCore.dll" #>
+
+<# 
+     
+
+    //当前项目目录
+    string projectDir = Host.ResolveAssemblyReference("$(ProjectDir)");
+
+	//解决方案目录
+    string solutionDir = Host.ResolveAssemblyReference("$(SolutionDir)");
+
+ 
+	  SqlSugarClient db = new SqlSugarClient("server=.;Initial Catalog=SqlSugarTest;Persist Security Info=True;User ID=sa;Password=sasa") ;
+ 
+      db.ClassGenerating.CreateClassFiles(db, "E://T4/MySql/Models","Models");  
+
+      
+#>
