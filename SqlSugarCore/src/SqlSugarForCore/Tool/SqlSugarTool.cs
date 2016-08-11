@@ -91,32 +91,8 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                if (isTry)//解决实体变更缓存引起的错误
-                {
-
-                    try
-                    {
-                        if (cacheManager.ContainsKey(key))
-                        {
-                            //清除实体缓存 
-                            cacheManager.Remove(key);
-                            return DataReaderToList<T>(type, dr, fields, isClose, false);
-                        }
-                    }
-                    catch (Exception innerEx)
-                    {
-                        throw new Exception("可能实体与数据库类型不匹配，请用 var str = db.ClassGenerating.TableNameToClass(db, \"类名\") 查看正确的实体！！\r\n具体错误信息:"+innerEx.Message);
-                    }
-                    finally {
-                        if (isClose) { dr.Close(); dr.Dispose(); dr = null; }
-                    }
-
-                }
-                else
-                {
-                    if (isClose) { dr.Close(); dr.Dispose(); dr = null; }
-                    throw ex;
-                }
+                if (isClose) { dr.Close(); dr.Dispose(); dr = null; }
+                throw ex;
             }
             return list;
         }
@@ -160,7 +136,7 @@ namespace SqlSugar
                     }
                     else if (SqlSugarTool.DicSS == type)
                     {
-                        var kv = new KeyValuePair<string, string>(dr.GetValue(0).TryToString(),dr.GetValue(1).TryToString());
+                        var kv = new KeyValuePair<string, string>(dr.GetValue(0).TryToString(), dr.GetValue(1).TryToString());
                         strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, string>)));
                     }
                     else
@@ -179,7 +155,7 @@ namespace SqlSugar
                 while (re.Read())
                 {
                     object[] array = new object[count];
-            
+
                     if (childType == SqlSugarTool.StringType)
                         strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToString()).ToArray(), type));
                     else if (childType == SqlSugarTool.ObjType)
@@ -217,7 +193,8 @@ namespace SqlSugar
                 foreach (PropertyInfo r in propertiesObj)
                 {
                     var value = r.GetValue(obj, null);
-                    if (r.PropertyType.IsEnum()) {
+                    if (r.PropertyType.IsEnum())
+                    {
                         value = (int)value;
                     }
                     if (value == null) value = DBNull.Value;
@@ -253,7 +230,8 @@ namespace SqlSugar
             foreach (PropertyInfo r in propertiesObj)
             {
                 var val = r.GetValue(obj, null);
-                if (r.PropertyType.IsEnum()) {
+                if (r.PropertyType.IsEnum())
+                {
                     val = (int)val;
                 }
                 reval.Add(r.Name, val == null ? DBNull.Value : val);

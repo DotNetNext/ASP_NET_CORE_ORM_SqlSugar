@@ -13,7 +13,7 @@ namespace SqlSugarTest.Demos
             {
 
                 //根据当前数据库生成所有表的实体类文件 （参数：SqlSugarClient ，文件目录，命名空间）
-                db.ClassGenerating.CreateClassFiles(db,@"D:\SqlSugarModelFiles","Models");
+                db.ClassGenerating.CreateClassFiles(db,@"D:\SqlSugarModelFiles2","Models");
                 //根据表名生成实体类文件
                 //db.ClassGenerating.CreateClassFilesByTableNames(db, Server.MapPath("~/Models"), "Models" , "student","school");
 

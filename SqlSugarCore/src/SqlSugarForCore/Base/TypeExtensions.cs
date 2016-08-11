@@ -7,6 +7,17 @@ namespace SqlSugar
 {
     public static class TypeExtensions
     {
+
+        public static Type[] GetGenericArguments(this Type type)
+        {
+            var reval = type.GetTypeInfo().GetGenericArguments();
+            return reval;
+        }
+        public static bool IsGenericType(this Type type)
+        {
+            var reval = type.GetTypeInfo().IsGenericType;
+            return reval;
+        }
         public static PropertyInfo[] GetProperties(this Type type)
         {
             var reval = type.GetTypeInfo().GetProperties();
