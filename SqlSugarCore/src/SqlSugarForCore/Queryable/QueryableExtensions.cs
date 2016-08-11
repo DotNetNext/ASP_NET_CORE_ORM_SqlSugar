@@ -53,6 +53,36 @@ namespace SqlSugar
         }
 
         /// <summary>
+        /// 条件筛选 例如：expression 为 it=>it.a  inValues值为 new string[]{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static SqlSugar.Queryable<T> In<T, FieldType>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression, params FieldType[] inValues)
+        {
+
+            ResolveExpress re = new ResolveExpress();
+            var InFieldName = re.GetExpressionRightFiled(expression);
+            return In<T, FieldType>(queryable, InFieldName, inValues);
+        }
+        /// <summary>
+        /// 条件筛选 例如：expression 为 it=>it.a  inValues值为 new string[]{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static SqlSugar.Queryable<T> In<T, FieldType>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression, List<FieldType> inValues)
+        {
+
+            ResolveExpress re = new ResolveExpress();
+            var InFieldName = re.GetExpressionRightFiled(expression);
+            return In<T, FieldType>(queryable, InFieldName, inValues);
+        }
+
+
+        /// <summary>
         /// 条件筛选
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -93,6 +123,41 @@ namespace SqlSugar
             queryable.OrderBy = orderFileds.ToSuperSqlFilter();
             return queryable;
         }
+
+
+
+        /// <summary>
+        /// 排序
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="orderFileds">如：id asc,name desc </param>
+        /// <returns></returns>
+        public static SqlSugar.Queryable<T> OrderBy<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression, OrderByType type = OrderByType.asc)
+        {
+            ResolveExpress re = new ResolveExpress();
+            var field = re.GetExpressionRightFiled(expression);
+            var pre = queryable.OrderBy.IsValuable() ? "," : "";
+            queryable.OrderBy += pre + field + " " + type.ToString().ToUpper();
+            return queryable;
+        }
+
+        /// <summary>
+        /// 分组
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="groupFileds">如：id,name </param>
+        /// <returns></returns>
+        public static SqlSugar.Queryable<T> GroupBy<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression)
+        {
+            ResolveExpress re = new ResolveExpress();
+            var field = re.GetExpressionRightFiled(expression);
+            var pre = queryable.GroupBy.IsValuable() ? "," : "";
+            queryable.GroupBy += pre + field;
+            return queryable;
+        }
+
         /// <summary>
         /// 分组
         /// </summary>
@@ -146,7 +211,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public static T Single<T>(this  SqlSugar.Queryable<T> queryable)
+        public static T Single<T>(this SqlSugar.Queryable<T> queryable)
         {
             return queryable.ToList().Single();
         }
@@ -157,7 +222,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public static T SingleOrDefault<T>(this  SqlSugar.Queryable<T> queryable)
+        public static T SingleOrDefault<T>(this SqlSugar.Queryable<T> queryable)
         {
             var reval = queryable.ToList();
             if (reval == null || reval.Count == 0)
@@ -173,7 +238,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public static T FirstOrDefault<T>(this  SqlSugar.Queryable<T> queryable)
+        public static T FirstOrDefault<T>(this SqlSugar.Queryable<T> queryable)
         {
             var reval = queryable.ToList();
             if (reval == null || reval.Count == 0)
@@ -188,7 +253,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public static T First<T>(this  SqlSugar.Queryable<T> queryable)
+        public static T First<T>(this SqlSugar.Queryable<T> queryable)
         {
             var reval = queryable.ToList();
             return reval.First();
@@ -201,7 +266,7 @@ namespace SqlSugar
         /// <param name="queryable"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static bool Any<T>(this  SqlSugar.Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static bool Any<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -220,7 +285,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable"></param>
         /// <returns></returns>
-        public static bool Any<T>(this  SqlSugar.Queryable<T> queryable)
+        public static bool Any<T>(this SqlSugar.Queryable<T> queryable)
         {
             return queryable.Count() > 0;
         }
@@ -232,7 +297,7 @@ namespace SqlSugar
         /// <param name="queryable"></param>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static T Single<T>(this  SqlSugar.Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static T Single<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -299,6 +364,19 @@ namespace SqlSugar
             };
             return reval;
         }
+        /// <summary>
+        /// 将源数据对象转换到新对象中
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static SqlSugar.Queryable<T> Select<T>(this SqlSugar.Queryable<T> queryable, string select)
+        {
+            queryable.Select = select;
+            return queryable;
+        }
 
 
         /// <summary>
@@ -340,6 +418,22 @@ namespace SqlSugar
         }
 
         /// <summary>
+        /// 获取最大值
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="maxField">列</param>
+        /// <returns></returns>
+        public static object Max<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression)
+        {
+
+            ResolveExpress re = new ResolveExpress();
+            var minField = re.GetExpressionRightFiled(expression);
+            return Max<T, object>(queryable, minField);
+        }
+
+        /// <summary>
         /// 获取最小值
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
@@ -356,6 +450,22 @@ namespace SqlSugar
             var reval = Convert.ChangeType(objValue, typeof(TResult));
             return (TResult)reval;
         }
+
+        /// <summary>
+        /// 获取最小值
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="minField">列</param>
+        /// <returns></returns>
+        public static object Min<T>(this SqlSugar.Queryable<T> queryable, Expression<Func<T, object>> expression)
+        {
+            ResolveExpress re = new ResolveExpress();
+            var minField = re.GetExpressionRightFiled(expression);
+            return Min<T, object>(queryable, minField);
+        }
+
 
         /// <summary>
         /// 将Queryable转换为List《T》集合
@@ -375,7 +485,7 @@ namespace SqlSugar
 
         }
 
-    
+
 
         /// <summary>
         /// 将Queryable转换为Json
@@ -409,11 +519,11 @@ namespace SqlSugar
         /// <returns></returns>
         public static DataTable ToDataTable<T>(this SqlSugar.Queryable<T> queryable)
         {
-                StringBuilder sbSql =SqlSugarTool.GetQueryableSql<T>(queryable);
-                var dataTable = queryable.DB.GetDataTable(sbSql.ToString(), queryable.Params.ToArray());
-                queryable = null;
-                sbSql = null;
-                return dataTable;
+            StringBuilder sbSql = SqlSugarTool.GetQueryableSql<T>(queryable);
+            var dataTable = queryable.DB.GetDataTable(sbSql.ToString(), queryable.Params.ToArray());
+            queryable = null;
+            sbSql = null;
+            return dataTable;
         }
 
         /// <summary>
