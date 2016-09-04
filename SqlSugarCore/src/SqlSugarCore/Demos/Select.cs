@@ -14,7 +14,7 @@ namespace SqlSugarTest.Demos
             //拉姆达查询
             QueryableDemo();
 
-            //多表查询
+            //更接近SQL编程方式
             SqlableDemo();
 
             //Sql查询
