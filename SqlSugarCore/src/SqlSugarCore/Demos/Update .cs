@@ -9,13 +9,13 @@ namespace SqlSugarTest.Demos
     {
         public void Init()
         {
-            int id = 1;
+            int id = 10;
             using (var db = SugarDao.GetInstance())
             {
                 //指定列更新
                 db.Update<School>(new { name = "蓝翔2" }, it => it.id == id);
-                db.Update<School, int>(new { name = "蓝翔2" }, 1, 3, 12);
-                db.Update<School, string>(new { name = "蓝翔2" }, new string[] { "1", "2" });
+                db.Update<School, int>(new { name = "蓝翔2" }, 10, 13, 12);
+                db.Update<School, string>(new { name = "蓝翔2" }, new string[] { "11", "12" });
 
                 //整个实体更新
                 db.Update(new School { id = id, name = "蓝翔2" });
