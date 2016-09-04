@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("作者:孙凯旋，蓝灯软件架构师")]
 [assembly: AssemblyCompany("上海蓝灯软件有限公司")]
-[assembly: AssemblyProduct("SqlSugarForCore 1.0.4")]
+[assembly: AssemblyProduct("SqlSugarForCore")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -17,5 +17,5 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("2ea1a286-e605-4eb8-ba44-c5861e8e552a")]
-[assembly: AssemblyVersion("2.4.3.9")]
-[assembly: AssemblyFileVersion("2.4.3.9")]
+[assembly: AssemblyVersion("2.7.0.1")]
+[assembly: AssemblyFileVersion("2.7.0.1")]

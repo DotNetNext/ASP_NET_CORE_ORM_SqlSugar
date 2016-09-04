@@ -8,7 +8,6 @@ using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
-
 namespace SqlSugar
 {
     /// <summary>
@@ -177,6 +176,16 @@ namespace SqlSugar
                 }
             }
         }
+
+        public static void SetParSize(SqlParameter par)
+        {
+            int size = par.Size;
+            if (size < 4000)
+            {
+                par.Size = 4000;
+            }
+        }
+
         /// <summary>
         /// 将实体对象转换成SqlParameter[] 
         /// </summary>
@@ -207,7 +216,9 @@ namespace SqlSugar
                     }
                     else
                     {
-                        listParams.Add(new SqlParameter("@" + r.Name, value));
+                        var par = new SqlParameter("@" + r.Name, value);
+                        SetParSize(par);
+                        listParams.Add(par);
                     }
                 }
             }
@@ -323,7 +334,28 @@ namespace SqlSugar
                 return identityInfo;
             }
         }
-
+        /// <summary>
+        /// 根据表名获取列名
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        internal static List<string> GetColumnsByTableName(SqlSugarClient db, string tableName)
+        {
+            string key = "GetColumnNamesByTableName" + tableName;
+            var cm = CacheManager<List<string>>.GetInstance();
+            if (cm.ContainsKey(key))
+            {
+                return cm[key];
+            }
+            else
+            {
+                string sql = " SELECT Name FROM SysColumns WHERE id=Object_Id('" + tableName + "')";
+                var reval = db.SqlQuery<string>(sql);
+                cm.Add(key, reval, cm.Day);
+                return reval;
+            }
+        }
 
         /// <summary>
         /// 根据表获取主键
@@ -496,6 +528,7 @@ namespace SqlSugar
 
         internal static StringBuilder GetQueryableSql<T>(SqlSugar.Queryable<T> queryable)
         {
+            string joinInfo = string.Join(" ", queryable.JoinTable);
             StringBuilder sbSql = new StringBuilder();
             string tableName = queryable.TableName.IsNullOrEmpty() ? queryable.TName : queryable.TableName;
             if (queryable.DB.Language.IsValuable() && queryable.DB.Language.Suffix.IsValuable())
@@ -517,20 +550,41 @@ namespace SqlSugar
                 string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
                 var order = queryable.OrderBy.IsValuable() ? (",row_index=ROW_NUMBER() OVER(ORDER BY " + queryable.OrderBy + " )") : null;
 
-                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM {0} {2} WHERE 1=1 {3} {4} ", tableName, order, withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy());
+                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, order, withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy(), joinInfo);
                 if (queryable.Skip == null && queryable.Take != null)
                 {
-                    sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    if (joinInfo.IsValuable())
+                    {
+                        sbSql.Insert(0, "SELECT * FROM ( ");
+                    }
+                    else
+                    {
+                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    }
                     sbSql.Append(") t WHERE t.row_index<=" + queryable.Take);
                 }
                 else if (queryable.Skip != null && queryable.Take == null)
                 {
-                    sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    if (joinInfo.IsValuable())
+                    {
+                        sbSql.Insert(0, "SELECT * FROM ( ");
+                    }
+                    else
+                    {
+                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    }
                     sbSql.Append(") t WHERE t.row_index>" + (queryable.Skip));
                 }
                 else if (queryable.Skip != null && queryable.Take != null)
                 {
-                    sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    if (joinInfo.IsValuable())
+                    {
+                        sbSql.Insert(0, "SELECT * FROM ( ");
+                    }
+                    else
+                    {
+                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                    }
                     sbSql.Append(") t WHERE t.row_index BETWEEN " + (queryable.Skip + 1) + " AND " + (queryable.Skip + queryable.Take));
                 }
                 #endregion
@@ -541,12 +595,29 @@ namespace SqlSugar
                 #region offset
                 string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
                 var order = queryable.OrderBy.IsValuable() ? ("ORDER BY " + queryable.OrderBy + " ") : null;
-                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM {0} {2} WHERE 1=1 {3} {4} ", tableName, "", withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy());
+                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, "", withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy(), joinInfo);
                 sbSql.Append(order);
-                sbSql.AppendFormat("OFFSET {0} ROW FETCH NEXT {1} ROWS ONLY", queryable.Skip, queryable.Take);
+                if (queryable.Skip != null || queryable.Take != null)
+                {
+                    sbSql.AppendFormat("OFFSET {0} ROW FETCH NEXT {1} ROWS ONLY", Convert.ToInt32(queryable.Skip), Convert.ToInt32(queryable.Take));
+                }
                 #endregion
             }
             return sbSql;
+        }
+
+        /// <summary>
+        /// 获取最底层类型
+        /// </summary>
+        /// <param name="propertyInfo"></param>
+        /// <param name="isNullable"></param>
+        /// <returns></returns>
+        internal static Type GetUnderType(PropertyInfo propertyInfo, ref bool isNullable)
+        {
+            Type unType = Nullable.GetUnderlyingType(propertyInfo.PropertyType);
+            isNullable = unType != null;
+            unType = unType ?? propertyInfo.PropertyType;
+            return unType;
         }
     }
 }

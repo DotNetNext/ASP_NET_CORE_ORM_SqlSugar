@@ -24,10 +24,11 @@ namespace SqlSugar
             this.SameIndex = sameIndex;
         }
         public string SqlWhere = null;
+        public ResolveExpressType Type = ResolveExpressType.oneT;
         public List<SqlParameter> Paras = new List<SqlParameter>();
         private int SameIndex = 1;
 
-        public string GetExpressionRightFiled(Expression exp)
+        public string GetExpressionRightField(Expression exp)
         {
             LambdaExpression lambda = exp as LambdaExpression;
             if (lambda.Body.NodeType.IsIn(ExpressionType.Convert))
@@ -39,6 +40,25 @@ namespace SqlSugar
             else if (lambda.Body.NodeType.IsIn(ExpressionType.MemberAccess))
             {
                 return (lambda.Body as MemberExpression).Member.Name;
+            }
+            else
+            {
+                Check.Exception(true, "不是有效拉姆达格式" + exp.ToString());
+                return null;
+            }
+        }
+        public string GetExpressionRightFieldByNT(Expression exp)
+        {
+            LambdaExpression lambda = exp as LambdaExpression;
+            if (lambda.Body.NodeType.IsIn(ExpressionType.Convert))
+            {
+                var memberExpr =
+                      ((UnaryExpression)lambda.Body).Operand as MemberExpression;
+                return memberExpr.ToString();
+            }
+            else if (lambda.Body.NodeType.IsIn(ExpressionType.MemberAccess))
+            {
+                return lambda.Body.ToString();
             }
             else
             {
@@ -77,6 +97,10 @@ namespace SqlSugar
                     this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type));
                 }
             }
+            foreach (var par in Paras)
+            {
+                SqlSugarTool.SetParSize(par);
+            }
         }
 
         /// <summary>
@@ -97,7 +121,8 @@ namespace SqlSugar
                 var expression = exp as BinaryExpression;
                 MemberType leftType = MemberType.None;
                 MemberType rightType = MemberType.None;
-
+                var leftIsDateTime = expression.Left.Type.ToString().Contains("System.DateTime");
+                var rightIsDateTime = expression.Right.Type.ToString().Contains("System.DateTime");
                 var left = CreateSqlElements(expression.Left, ref leftType);
                 var right = CreateSqlElements(expression.Right, ref rightType);
                 var oper = GetOperator(expression.NodeType);
@@ -125,12 +150,30 @@ namespace SqlSugar
                 #endregion
                 else if (isKeyOperValue)
                 {
-                    var oldLeft = AddParas(ref left, right);
+                    object parValue = null;
+                    if (leftIsDateTime && right != null && right.IsDate())
+                    {
+                        parValue = Convert.ToDateTime(right);
+                    }
+                    else
+                    {
+                        parValue = right;
+                    }
+                    var oldLeft = AddParas(ref left, parValue);
                     return string.Format(" ({0} {1} @{2}) ", oldLeft, oper, left);
                 }
                 else if (isValueOperKey)
                 {
-                    var oldRight = AddParasReturnRight(left, ref right);
+                    object parValue = null;
+                    if (rightIsDateTime && left != null && left.IsDate())
+                    {
+                        parValue = Convert.ToDateTime(left);
+                    }
+                    else
+                    {
+                        parValue = left;
+                    }
+                    var oldRight = AddParasReturnRight(parValue, ref right);
                     return string.Format("( @{0} {1} {2} )", right, oper, oldRight);
                 }
                 else if (leftType == MemberType.Value && rightType == MemberType.Value)
@@ -258,6 +301,12 @@ namespace SqlSugar
                 }
                 else
                 {
+                    if (Type == ResolveExpressType.nT)
+                    {
+                        type = MemberType.Key;
+                        return exp.ToString();
+                    }
+
                     string name = me.Member.Name;
                     type = MemberType.Key;
                     return name;
@@ -292,11 +341,15 @@ namespace SqlSugar
         }
 
 
-        private string AddParas(ref string left, string right)
+        private string AddParas(ref string left, object right)
         {
             string oldLeft = left;
             left = left + SameIndex;
             SameIndex++;
+            if (Type != ResolveExpressType.oneT)
+            {
+                left = left.Replace(".", "_");
+            }
             if (right == null)
             {
                 this.Paras.Add(new SqlParameter("@" + left, DBNull.Value));
@@ -307,11 +360,15 @@ namespace SqlSugar
             }
             return oldLeft;
         }
-        private string AddParasReturnRight(string left, ref string right)
+        private string AddParasReturnRight(object left, ref string right)
         {
             string oldRight = right;
             right = right + SameIndex;
             SameIndex++;
+            if (Type != ResolveExpressType.oneT)
+            {
+                right = right.Replace(".", "_");
+            }
             if (left == null)
             {
                 this.Paras.Add(new SqlParameter("@" + right, DBNull.Value));

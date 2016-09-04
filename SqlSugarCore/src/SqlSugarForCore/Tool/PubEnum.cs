@@ -39,4 +39,19 @@ namespace SqlSugar
         RowNumber = 0,
         Offset = 1
     }
+    /// <summary>
+    /// 解析类型
+    /// </summary>
+    public enum ResolveExpressType
+    {
+        /// <summary>
+        /// 单个T
+        /// </summary>
+        oneT = 0,
+        /// <summary>
+        /// 多个T
+        /// </summary>
+        nT = 1,
+
+    }
 }

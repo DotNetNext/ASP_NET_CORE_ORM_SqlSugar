@@ -23,7 +23,7 @@ namespace SqlSugar
         /// <summary>
         /// 实体类型
         /// </summary>
-        public Type Type { get { return typeof(T); }  }
+        public Type Type { get { return typeof(T); } }
         /// <summary>
         /// 数据接口
         /// </summary>
@@ -64,5 +64,10 @@ namespace SqlSugar
         /// 条件索引
         /// </summary>
         public int WhereIndex = 1;
+        /// <summary>
+        /// 联表查询临时数据
+        /// </summary>
+        public List<string> JoinTable = new List<string>();
+
     }
 }

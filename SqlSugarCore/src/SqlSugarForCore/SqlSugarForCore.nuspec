@@ -2,11 +2,11 @@
 <package >
   <metadata>
     <id>sqlSugarCore</id>
-    <version>1.0.4</version>
+    <version>2.4.3.9</version>
     <authors>sunkaixuan</authors>
     <owners>Landa</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
-    <projectUrl>http://www.cnblogs.com/sunkaixuan/</projectUrl>
+    <projectUrl>https://github.com/sunkaixuan/ASP_NET_CORE_ORM_SqlSugar</projectUrl>
     <iconUrl>https://secure.gravatar.com/avatar/a82c03402497b2e58fd65038a3699b30</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Asp.net Core ORM SqlSugar ORM,core 1.0,High-performance, lightweight http://www.cnblogs.com/sunkaixuan/p/5654695.html</description>

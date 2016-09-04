@@ -11,7 +11,7 @@ namespace SqlSugarTest.Demos
         public void Init()
         {
 
-            //单表查询
+            //拉姆达查询
             QueryableDemo();
 
             //多表查询
@@ -38,6 +38,34 @@ namespace SqlSugarTest.Demos
                 var list3 = db.Queryable<Student>().Where(c => c.id < 10).Select(c => new { newid = c.id, newname = c.name, xx_name = c.name }).ToDynamic();//匿名类转换
 
                 var list4 = db.Queryable<Student>().Where(c => c.id < 10).Select("id as newid, name as newname ,name as xx_name").ToDynamic();//匿名类转换
+
+                var jList1 = db.Queryable<Student>()
+                 .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) // left join  School s2  on s1.id=s2.id
+                 .Where<Student, School>((s1, s2) => s1.id > 1)  // where s1.id>1
+                 .OrderBy<Student, School>((s1, s2) => s1.id) //order by s1.id 多个order可以  .oderBy().orderby 叠加 
+                 .Skip(1)
+                 .Take(2)
+                 .Select<Student, School, classNew>((s1, s2) => new classNew() { newid = s1.id, newname = s2.name, xx_name = s1.name })//select目前只支持这种写法
+                 .ToList();
+
+                var jList2 = db.Queryable<Student>()
+                .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) // left join  School s2  on s1.id=s2.id
+                .Where<Student, School>((s1, s2) => s1.id > 1)  // where s1.id>1
+                .OrderBy<Student, School>((s1, s2) => s1.id) //order by s1.id 多个order可以  .oderBy().orderby 叠加 
+                .Skip(1)
+                .Take(2)
+                .Select<Student, School, classNew>((s1, s2) => new classNew() { newid = s1.id, newname = s1.name, xx_name = s1.name })//select目前只支持这种写法
+                .ToDynamic();
+
+
+                var jList3 = db.Queryable<Student>()
+                .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) // left join  School s2  on s1.id=s2.id
+                .Where<Student, School>((s1, s2) => s1.id > 1)  // where s1.id>1
+                .OrderBy<Student, School>((s1, s2) => s1.id) //order by s1.id 多个order可以  .oderBy().orderby 叠加 
+                .Skip(1)
+                .Take(2)
+                .Select<Student, classNew>(s1 => new classNew() { newid = s1.id, newname = s1.name, xx_name = s1.name })//select目前只支持这种写法
+                .ToDynamic();
             }
         }
         /// <summary>
@@ -241,6 +269,78 @@ namespace SqlSugarTest.Demos
                 List<SexTotal> list9 = db.Queryable<Student>().Where(c => c.id < 20).GroupBy(it => it.sex).Select<Student, SexTotal>("Sex,Count=count(*)").ToList();
                 List<SexTotal> list10 = db.Queryable<Student>().Where(c => c.id < 20).GroupBy("sex").Select<Student, SexTotal>("Sex,Count=count(*)").ToList();
                 //SELECT Sex,Count=count(*)  FROM Student  WHERE 1=1  AND  (id < 20)    GROUP BY Sex --生成结果
+
+
+                //2表关联查询
+                var jList = db.Queryable<Student>()
+                .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) //默认left join
+                .Where<Student, School>((s1, s2) => s1.id == 1)
+                .Select("s1.*,s2.name as schName")
+                .ToDynamic();
+
+                /*等于同于
+                 SELECT s1.*,s2.name as schName 
+                 FROM [Student]  s1 
+                 LEFT JOIN [School]  s2 ON  s1.sch_id  = s2.id 
+                 WHERE  s1.id  = 1 */
+
+                //2表关联查询并分页
+                var jList2 = db.Queryable<Student>()
+                .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) //默认left join
+                                                                            //如果要用inner join这么写
+                                                                            //.JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id  ,JoinType.INNER)
+                .Where<Student, School>((s1, s2) => s1.id > 1)
+                .OrderBy<Student, School>((s1, s2) => s1.name)
+                .Skip(10)
+                .Take(20)
+                .Select("s1.*,s2.name as schName")
+                .ToDynamic();
+
+                //3表查询并分页
+                var jList3 = db.Queryable<Student>()
+               .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) // left join  School s2  on s1.id=s2.id
+               .JoinTable<Student, School>((s1, s3) => s1.sch_id == s3.id) // left join  School s3  on s1.id=s3.id
+               .Where<Student, School>((s1, s2) => s1.id > 1)  // where s1.id>1
+               .Where<Student>(s1 => s1.id > 0)
+               .OrderBy<Student, School>((s1, s2) => s1.id) //order by s1.id 多个order可以  .oderBy().orderby 叠加 
+               .Skip(10)
+               .Take(20)
+               .Select("s1.*,s2.name as schName,s3.name as schName2")//select目前只支持这种写法
+               .ToDynamic();
+
+
+                //上面的方式都是与第一张表join，第三张表想与第二张表join写法如下
+                List<classNew> jList4 = db.Queryable<Student>()
+                 .JoinTable<Student, School>((s1, s2) => s1.sch_id == s2.id) // left join  School s2  on s1.id=s2.id
+                 .JoinTable<Student, School, Area>((s1, s2, a1) => a1.Id == s2.AreaId)// left join  Area a1  on a1.id=s2.AreaId
+                 .Select<Student, School, Area, classNew>((s1, s2, a1) => new classNew { newid = s1.id, studentName = s1.name, schoolName = s2.name, areaName = a1.name }).ToList();
+
+
+
+
+                //最多支持5表查询,太过复杂的建议用Sqlable或者SqlQuery,我们的Queryable只适合轻量级的查询
+
+
+
+
+
+                //拼接
+                var queryable = db.Queryable<Student>().Where(it => true);
+                if (maxId.ObjToInt() == 1)
+                {
+                    queryable.Where(it => it.id == 1);
+                }
+                else
+                {
+                    queryable.Where(it => it.id == 2);
+                }
+                var listJoin = queryable.ToList();
+
+
+                //queryable和SqlSugarClient解耦
+                var par = new Queryable<Student>().Where(it => it.id == 1);//声名没有connection对象的Queryable
+                par.DB = db;
+                var listPar = par.ToList();
             }
         }
     }
