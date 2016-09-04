@@ -45,7 +45,9 @@ namespace SqlSugarTest
                 //执行DEMO
                 demo.Init();
 
-                Console.WriteLine("执行成功请关闭窗口");
+                //更多例子请查看API
+                //http://www.cnblogs.com/sunkaixuan/p/5654695.html
+                Console.WriteLine("执行成功请关闭窗口 ,更多例子请查看API:http://www.cnblogs.com/sunkaixuan/p/5654695.html");
                 Console.ReadKey();
             }
         }

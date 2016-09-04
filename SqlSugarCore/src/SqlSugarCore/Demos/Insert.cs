@@ -33,7 +33,24 @@ namespace SqlSugarTest.Demos
                 };
 
                 db.InsertRange(list); //批量插入
+
+
+                //高性能批量插入
+                //注意:性能比InsertRange高，功能没有InsertRange全,不支持别名表和排除列
+                using (SqlSugarClient db2 = SugarDao.GetInstance())//开启数据库连接
+                {
+                    var list2 = new List<Student>()
+                {
+                    new Student(){ isOk=true, name="张三",  sch_id=1, sex="男"},
+                    new Student(){ isOk=true, name="sun",  sch_id=1, sex="女"},
+                    new Student(){ isOk=true, name="mama",  sch_id=1, sex="gril"}
+                };
+                    db.SqlBulkCopy<Student>(list2);
+                }
             }
+
+
+
         }
     }
 }
