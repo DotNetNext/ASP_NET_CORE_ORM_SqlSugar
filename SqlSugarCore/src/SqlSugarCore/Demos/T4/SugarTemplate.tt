@@ -3,16 +3,28 @@
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Data" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="SqlSugar" #>
-<#@ import namespace="System.Runtime" #>
-<#@ assembly name="$(ProjectDir)\Demos\T4\SqlSugarForCore.dll" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Web" #>
+<#@ assembly name="$(ProjectDir)\Demos\T4\SqlSugar.dll" #>
 
 <# 
      
- 
+	//CTRL+S将会执行该文件的代码，自动作生实体 用来生成实体的是非core版的 sqlsugar.dll
+    //当前项目目录
+    string projectDir = Host.ResolveAssemblyReference("$(ProjectDir)");
 
-      
+	//解决方案目录
+    string solutionDir = Host.ResolveAssemblyReference("$(SolutionDir)");
+
+ 
+	 using (var db = new SqlSugarClient("server=.;Initial Catalog=SqlSugarTest;Persist Security Info=True;User ID=sa;Password=sasa"))
+     {
+          db.ClassGenerating.CreateClassFiles(db, projectDir +"/Models","Models");  
+
+      };
 #>

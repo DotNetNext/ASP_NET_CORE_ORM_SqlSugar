@@ -16,7 +16,7 @@ namespace SqlSugar
     /// ** 作者：sunkaixuan
     /// ** 使用说明：http://www.cnblogs.com/sunkaixuan/p/4649904.html
     /// </summary>
-    public class SqlSugarClient : SqlHelper, SqlSugar.IClient
+    public class SqlSugarClient : SqlHelper
     {
 
         public SqlSugarClient(string connectionString)
@@ -27,6 +27,7 @@ namespace SqlSugar
         }
         private List<KeyValue> _mappingTableList = null;
         private Dictionary<string, Func<KeyValueObj>> _filterFuns = null;
+        private Dictionary<string, List<string>> _filterColumns = null;
         private List<PubModel.SerialNumber> _serialNumber = null;
 
         internal string GetTableNameByClassType(string typeName)
@@ -116,6 +117,19 @@ namespace SqlSugar
             _filterFuns = filters;
         }
 
+        /// <summary>
+        /// 设置过滤器（用户权限过滤）
+        /// filters为可查询列名的集合，
+        /// </summary>
+        /// <param name="filters"></param>
+        public void SetFilterFilterParas(Dictionary<string, List<string>> filterColumns)
+        {
+            if (filterColumns.Values == null || filterColumns.Values.Count == 0)
+            {
+                throw new Exception("过滤器的列名集合不能为空SetFilterFilterParas.filters");
+            }
+            _filterColumns = filterColumns;
+        }
 
 
 
@@ -175,7 +189,11 @@ namespace SqlSugar
                     queryable.Where.Add(whereStr);
                     if (filterValue.Value != null)
                         queryable.Params.AddRange(SqlSugarTool.GetParameters(filterValue.Value));
-                    return queryable;
+                }
+                if (_filterColumns.IsValuable() && _filterColumns.ContainsKey(CurrentFilterKey))
+                {
+                    var columns = _filterColumns[CurrentFilterKey];
+                    queryable.Select = string.Join(",", columns);
                 }
             }
             return queryable;
@@ -316,11 +334,11 @@ namespace SqlSugar
             var identities = SqlSugarTool.GetIdentitiesKeyByTableName(this, typeName);
             isIdentity = identities != null && identities.Count > 0;
             //sql语句缓存
-            string cacheSqlKey = "db.Insert." + typeName;
+            string cacheSqlKey = "db.Insert." + type.FullName;
             var cacheSqlManager = CacheManager<StringBuilder>.GetInstance();
 
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
 
             PropertyInfo[] props = null;
@@ -398,7 +416,14 @@ namespace SqlSugar
                         var isAnyNum = _serialNumber.Any(serEexp);
                         if (isAnyNum && (val == DBNull.Value || val.IsNullOrEmpty()))
                         {
-                            val = _serialNumber.First(serEexp).GetNumFunc();
+                            if (_serialNumber.First(serEexp).GetNumFunc != null)
+                            {
+                                val = _serialNumber.First(serEexp).GetNumFunc();
+                            }
+                            if (_serialNumber.First(serEexp).GetNumFuncWithDb != null)
+                            {
+                                val = _serialNumber.First(serEexp).GetNumFuncWithDb(this);
+                            }
                         }
                     }
 
@@ -438,8 +463,6 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                var cacheManager = CacheManager<string>.GetInstance();
-                cacheManager.RemoveAll(it => it.Contains("KeyBy"));
                 throw new Exception("sql:" + sql + "\n" + ex.Message);
             }
 
@@ -496,7 +519,7 @@ namespace SqlSugar
 
             int i = 0;
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
             PropertyInfo[] props = null;
             if (cachePropertiesManager.ContainsKey(cachePropertiesKey))
@@ -576,7 +599,7 @@ namespace SqlSugar
             var isClass = !isDynamic;
 
             //sql语句缓存
-            string cacheSqlKey = "db.update." + typeName + rows.Length;
+            string cacheSqlKey = "db.update." + type.FullName + rows.Length;
             var cacheSqlManager = CacheManager<StringBuilder>.GetInstance();
 
 
@@ -649,8 +672,6 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                var cacheManager = CacheManager<string>.GetInstance();
-                cacheManager.RemoveAll(it => it.Contains("KeyBy"));
                 throw new Exception("sql:" + sbSql.ToString() + "\n" + ex.Message);
             }
         }
@@ -743,8 +764,6 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                var cacheManager = CacheManager<string>.GetInstance();
-                cacheManager.RemoveAll(it => it.Contains("KeyBy"));
                 throw new Exception("sql:" + sbSql.ToString() + "\n" + ex.Message);
             }
         }
@@ -779,7 +798,7 @@ namespace SqlSugar
             string typeName = type.Name;
             typeName = GetTableNameByClassType(typeName);
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
             PropertyInfo[] props = SqlSugarTool.GetGetPropertiesByCache(type, cachePropertiesKey, cachePropertiesManager);
             bool isSuccess = false;
@@ -822,7 +841,7 @@ namespace SqlSugar
             string typeName = type.Name;
             typeName = GetTableNameByClassType(typeName);
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
             PropertyInfo[] props = SqlSugarTool.GetGetPropertiesByCache(type, cachePropertiesKey, cachePropertiesManager);
             bool isSuccess = false;
@@ -848,7 +867,7 @@ namespace SqlSugar
             string typeName = type.Name;
             typeName = GetTableNameByClassType(typeName);
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
             PropertyInfo[] props = SqlSugarTool.GetGetPropertiesByCache(type, cachePropertiesKey, cachePropertiesManager);
             bool isSuccess = false;
@@ -874,7 +893,7 @@ namespace SqlSugar
             string typeName = type.Name;
             typeName = GetTableNameByClassType(typeName);
             //属性缓存
-            string cachePropertiesKey = "db." + typeName + ".GetProperties";
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
             PropertyInfo[] props = null;
             if (cachePropertiesManager.ContainsKey(cachePropertiesKey))
@@ -903,9 +922,9 @@ namespace SqlSugar
         /// <summary>
         /// 清除所有缓存
         /// </summary>
-        public void RemoveAllCache()
+        public void RemoveAllCache<T>()
         {
-            CacheManager<int>.GetInstance().RemoveAll(c => true);
+            CacheManager<T>.GetInstance().RemoveAll(c => true);
         }
 
     }

@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace SqlSugar
 {
@@ -820,6 +821,20 @@ namespace SqlSugar
         public static string ToJson<T>(this Queryable<T> queryable)
         {
             return JsonConverter.DataTableToJson(ToDataTable<T>(queryable), queryable.DB.SerializerDateFormat);
+        }
+        /// <summary>
+        /// 返回Sql和SqlParameter []
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="queryable"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string[]> ToSql<T>(this Queryable<T> queryable)
+        {
+            var sql = SqlSugarTool.GetQueryableSql<T>(queryable).ToString();
+            var pars = queryable.Params.ToArray();
+            var reval = new Dictionary<string, string[]>();
+            reval.Add(sql, pars.Select(it => it.ParameterName + ":" + it.Value).ToArray());
+            return reval;
         }
 
         /// <summary>

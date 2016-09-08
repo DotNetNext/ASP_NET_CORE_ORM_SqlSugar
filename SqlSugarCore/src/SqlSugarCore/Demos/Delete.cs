@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SqlSugar;
+using Models;
+
 namespace SqlSugarTest.Demos
 {
     public class Delete : IDemos

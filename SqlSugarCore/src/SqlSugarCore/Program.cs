@@ -17,7 +17,7 @@ namespace SqlSugarTest
                 var dt = db.GetDataTable("select * from student where id=@id", new { id = 1 });
 
                 //设置执行的DEMO
-                string switch_on = "Select";
+                string switch_on = "CreateClass";
 
                 IDemos demo = null;
                 switch (switch_on)

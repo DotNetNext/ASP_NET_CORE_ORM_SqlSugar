@@ -1,14 +1,32 @@
 ﻿using System;
-namespace SqlSugarTest
+using System.Linq;
+using System.Text;
+
+namespace Models
 {
-    public class Subject{
-                        
-    public int id {get;set;}
+    public class Subject
+    {
+        
+     /// <summary>
+     /// Desc:- 
+     /// Default:- 
+     /// Nullable:False 
+     /// </summary>
+        public int id {get;set;}
 
-    public int sid {get;set;}
+     /// <summary>
+     /// Desc:学生ID 
+     /// Default:- 
+     /// Nullable:True 
+     /// </summary>
+        public int? studentId {get;set;}
 
-    public string name {get;set;}
+     /// <summary>
+     /// Desc:- 
+     /// Default:- 
+     /// Nullable:True 
+     /// </summary>
+        public string name {get;set;}
 
-   }
-            
+    }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Models
 {
-    public class Area
+    public class V_LanguageTest
     {
         
      /// <summary>
@@ -12,14 +12,21 @@ namespace Models
      /// Default:- 
      /// Nullable:False 
      /// </summary>
-        public int id {get;set;}
+        public int Id {get;set;}
 
      /// <summary>
      /// Desc:- 
      /// Default:- 
      /// Nullable:True 
      /// </summary>
-        public string name {get;set;}
+        public int? LanguageId {get;set;}
+
+     /// <summary>
+     /// Desc:- 
+     /// Default:- 
+     /// Nullable:True 
+     /// </summary>
+        public string Name {get;set;}
 
     }
 }
