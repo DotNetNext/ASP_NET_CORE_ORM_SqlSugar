@@ -41,11 +41,6 @@ namespace SqlSugar
             get
             {
                 return this.Get(key);
-
-                throw new NotImplementedException();
-                //return
-
-                //  (V)HttpRuntime.Cache[CreateKey(key)];
             }
         }
         #endregion
@@ -73,9 +68,6 @@ namespace SqlSugar
         public override V Get(string key)
         {
             return this.InstanceCache[key];
-
-            throw new NotImplementedException();
-            //return (V)HttpRuntime.Cache.Get(CreateKey(key));
         }
 
         /// <summary>         
@@ -99,9 +91,6 @@ namespace SqlSugar
         public override void Add(string key, V value)
         {
             this.InstanceCache.GetOrAdd(key, value);
-
-            //throw new NotImplementedException();
-            //Add(key, value, Minutes * 20);
         }
 
         /// <summary>         
@@ -161,18 +150,6 @@ namespace SqlSugar
         {
             this.InstanceCache.Clear();
 
-            //throw new NotImplementedException();
-            //System.Web.Caching.Cache cache = HttpRuntime.Cache;
-            //IDictionaryEnumerator CacheEnum = cache.GetEnumerator();
-            //ArrayList al = new ArrayList();
-            //while (CacheEnum.MoveNext())
-            //{
-            //    al.Add(CacheEnum.Key);
-            //}
-            //foreach (string key in al)
-            //{
-            //    cache.Remove(key);
-            //}
         }
 
         /// <summary>
@@ -207,22 +184,6 @@ namespace SqlSugar
             //}
         }
         #endregion
-
-        #region 私有函数
-
-        /// <summary>         
-        ///创建KEY   
-        /// </summary>         
-        /// <param name="key">Key</param>         
-        /// <returns></returns>         
-        private string CreateKey(string key)
-        {
-            return "SqlSugar." + key.ToString();
-        }
-
-        #endregion
-
-
 
 
     }

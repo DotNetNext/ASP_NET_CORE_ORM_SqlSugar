@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
+
 namespace SqlSugar
 {
     /// <summary>
@@ -34,6 +35,8 @@ namespace SqlSugar
         internal static Type DicOO = typeof(KeyValuePair<object, object>);
         internal static Type DicSo = typeof(KeyValuePair<string, object>);
         internal static Type DicIS = typeof(KeyValuePair<int, string>);
+        internal static Type DicArraySS = typeof(Dictionary<string, string>);
+        internal static Type DicArraySO = typeof(Dictionary<string, object>);
 
         /// <summary>
         /// Reader转成List《T》
@@ -197,28 +200,56 @@ namespace SqlSugar
             if (obj != null)
             {
                 var type = obj.GetType();
-                var propertiesObj = type.GetProperties();
-                string replaceGuid = Guid.NewGuid().ToString();
-                foreach (PropertyInfo r in propertiesObj)
+                var isDic = type.IsIn(SqlSugarTool.DicArraySO, SqlSugarTool.DicArraySS);
+                if (isDic)
                 {
-                    var value = r.GetValue(obj, null);
-                    if (r.PropertyType.IsEnum())
+                    if (type == SqlSugarTool.DicArraySO)
                     {
-                        value = (int)value;
-                    }
-                    if (value == null) value = DBNull.Value;
-                    if (r.Name.ToLower().Contains("hierarchyid"))
-                    {
-                        var par = new SqlParameter("@" + r.Name, SqlDbType.Udt);
-                        par.TypeName = "HIERARCHYID";
-                        par.Value = value;
-                        listParams.Add(par);
+                        var newObj = (Dictionary<string, object>)obj;
+                        var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
+                        foreach (var par in pars)
+                        {
+                            SetParSize(par);
+                        }
+                        listParams.AddRange(pars);
                     }
                     else
                     {
-                        var par = new SqlParameter("@" + r.Name, value);
-                        SetParSize(par);
-                        listParams.Add(par);
+
+                        var newObj = (Dictionary<string, string>)obj;
+                        var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
+                        foreach (var par in pars)
+                        {
+                            SetParSize(par);
+                        }
+                        listParams.AddRange(pars); ;
+                    }
+                }
+                else
+                {
+                    var propertiesObj = type.GetProperties();
+                    string replaceGuid = Guid.NewGuid().ToString();
+                    foreach (PropertyInfo r in propertiesObj)
+                    {
+                        var value = r.GetValue(obj, null);
+                        if (r.PropertyType.IsEnum())
+                        {
+                            value = (int)value;
+                        }
+                        if (value == null) value = DBNull.Value;
+                        if (r.Name.ToLower().Contains("hierarchyid"))
+                        {
+                            var par = new SqlParameter("@" + r.Name, SqlDbType.Udt);
+                            par.TypeName = "HIERARCHYID";
+                            par.Value = value;
+                            listParams.Add(par);
+                        }
+                        else
+                        {
+                            var par = new SqlParameter("@" + r.Name, value);
+                            SetParSize(par);
+                            listParams.Add(par);
+                        }
                     }
                 }
             }
@@ -236,19 +267,39 @@ namespace SqlSugar
             Dictionary<string, object> reval = new Dictionary<string, object>();
             if (obj == null) return reval;
             var type = obj.GetType();
-            var propertiesObj = type.GetProperties();
-            string replaceGuid = Guid.NewGuid().ToString();
-            foreach (PropertyInfo r in propertiesObj)
+            var isDic = type.IsIn(SqlSugarTool.DicArraySO, SqlSugarTool.DicArraySS);
+            if (isDic)
             {
-                var val = r.GetValue(obj, null);
-                if (r.PropertyType.IsEnum())
+                if (type == SqlSugarTool.DicArraySO)
                 {
-                    val = (int)val;
+                    return (Dictionary<string, object>)obj;
                 }
-                reval.Add(r.Name, val == null ? DBNull.Value : val);
+                else
+                {
+                    var newObj = (Dictionary<string, string>)obj;
+                    foreach (var item in newObj)
+                    {
+                        reval.Add(item.Key, item.Value);
+                    }
+                    return reval;
+                }
             }
+            else
+            {
+                var propertiesObj = type.GetProperties();
+                string replaceGuid = Guid.NewGuid().ToString();
+                foreach (PropertyInfo r in propertiesObj)
+                {
+                    var val = r.GetValue(obj, null);
+                    if (r.PropertyType.IsEnum())
+                    {
+                        val = (int)val;
+                    }
+                    reval.Add(r.Name, val == null ? DBNull.Value : val);
+                }
 
-            return reval;
+                return reval;
+            }
         }
 
         /// <summary>
@@ -453,32 +504,6 @@ namespace SqlSugar
         public static Dictionary<string, string> GetParameterDictionary(bool isNotNullAndEmpty = false)
         {
             throw new Exception("未实现");
-            //if (SpecialRequestForm == null)
-            //{
-            //    Dictionary<string, string> paraDictionaryByGet = HttpContext.Current.Request.QueryString.Keys.Cast<string>()
-            //           .ToDictionary(k => k, v => HttpContext.Current.Request.QueryString[v]);
-
-            //    Dictionary<string, string> paraDictionaryByPost = HttpContext.Current.Request.Form.Keys.Cast<string>()
-            //        .ToDictionary(k => k, v => HttpContext.Current.Request.Form[v]);
-
-            //    var paraDictionarAll = paraDictionaryByGet.Union(paraDictionaryByPost);
-            //    if (isNotNullAndEmpty)
-            //    {
-            //        paraDictionarAll = paraDictionarAll.Where(it => !string.IsNullOrEmpty(it.Value));
-            //    }
-            //    return paraDictionarAll.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
-            //}
-            //else
-            //{
-
-            //    var pars = HttpContext.Current.Request.Form.Keys.Cast<string>()
-            //         .ToDictionary(k => k, v => SpecialRequestForm(v)).Where(it => true);
-            //    if (isNotNullAndEmpty)
-            //    {
-            //        pars = pars.Where(it => !string.IsNullOrEmpty(it.Value));
-            //    }
-            //    return pars.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
-            //}
         }
 
         internal static void GetSqlableSql(Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, StringBuilder sbSql)
@@ -511,18 +536,6 @@ namespace SqlSugar
         /// <returns></returns>
         public static SqlParameter[] GetParameterArray(bool isNotNullAndEmpty = false)
         {
-            //Dictionary<string, string> paraDictionaryByGet = HttpContext.Current.Request.QueryString.Keys.Cast<string>()
-            //       .ToDictionary(k => k, v => HttpContext.Current.Request.QueryString[v]);
-
-            //Dictionary<string, string> paraDictionaryByPost = HttpContext.Current.Request.Form.Keys.Cast<string>()
-            //    .ToDictionary(k => k, v => HttpContext.Current.Request.Form[v]);
-
-            //var paraDictionarAll = paraDictionaryByGet.Union(paraDictionaryByPost);
-            //if (isNotNullAndEmpty)
-            //{
-            //    paraDictionarAll = paraDictionarAll.Where(it => !string.IsNullOrEmpty(it.Value));
-            //}
-            //return paraDictionarAll.Select(it => new SqlParameter("@" + it.Key, it.Value)).ToArray();
             throw new Exception("未实现");
         }
 
