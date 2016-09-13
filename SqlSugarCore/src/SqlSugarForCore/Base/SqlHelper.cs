@@ -181,7 +181,7 @@ namespace SqlSugar
             var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), GetReader(sql, pars), null);
             return reval;
         }
-        public T GetSingle<T>(string sql, object[] pars)
+        public T GetSingle<T>(string sql, object pars)
         {
             return GetSingle<T>(sql, SqlSugarTool.GetParameters(pars));
         }
@@ -212,8 +212,6 @@ namespace SqlSugar
             _sqlDataAdapter.SelectCommand.Parameters.Clear();
             return dt;
         }
-     
-
         public void Dispose()
         {
             if (_sqlConnection != null)
