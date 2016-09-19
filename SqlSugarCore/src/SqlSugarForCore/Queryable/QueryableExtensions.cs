@@ -12,7 +12,7 @@ namespace SqlSugar
     /// <summary>
     /// ** 描述：Queryable扩展函数
     /// ** 创始时间：2015-7-13
-    /// ** 修改时间：-
+    /// ** 修改时间：2016-9-19
     /// ** 作者：sunkaixuan
     /// ** 使用说明：
     /// </summary>
@@ -21,17 +21,16 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            if (queryable.JoinTable.IsValuable())
-            {
+            if (queryable.JoinTable.IsValuable()) {
                 re.Type = ResolveExpressType.nT;
             }
             re.ResolveExpression(re, expression);
@@ -43,10 +42,10 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="whereString"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="whereString">匿名参数(例如:new{id=1,name="张三"})</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T>(this Queryable<T> queryable, string whereString, object whereObj = null)
         {
             var type = queryable.Type;
@@ -60,10 +59,11 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="T2">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T, T2>(this Queryable<T> queryable, Expression<Func<T, T2, object>> expression)
         {
             var type = queryable.Type;
@@ -79,10 +79,12 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="T2">表实体类型</typeparam>
+        /// <typeparam name="T3">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T, T2, T3>(this Queryable<T> queryable, Expression<Func<T, T2, T3, object>> expression)
         {
             var type = queryable.Type;
@@ -98,10 +100,13 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="T2">表实体类型</typeparam>
+        /// <typeparam name="T3">表实体类型</typeparam>
+        /// <typeparam name="T4">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T, T2, T3, T4>(this Queryable<T> queryable, Expression<Func<T, T2, T3, T4, object>> expression)
         {
             var type = queryable.Type;
@@ -117,10 +122,14 @@ namespace SqlSugar
         /// <summary>
         /// 条件筛选
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="T2">表实体类型</typeparam>
+        /// <typeparam name="T3">表实体类型</typeparam>
+        /// <typeparam name="T4">表实体类型</typeparam>
+        /// <typeparam name="T5">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Where<T, T2, T3, T4, T5>(this Queryable<T> queryable, Expression<Func<T, T2, T3, T4, T5, object>> expression)
         {
             var type = queryable.Type;
@@ -135,12 +144,14 @@ namespace SqlSugar
 
 
         /// <summary>
-        /// 条件筛选 例如：InFieldName 为 a inValues 值为 new string[]{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        /// 条件筛选 ( 例如：InFieldName 为 id, inValues 值为 new string[]{"1" ,"2"} 生成的SQL就是 id in('1','2')  )
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="FieldType">In的字段类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="InFieldName">In的字段名称</param>
+        /// <param name="inValues">In的值的数组集合</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> In<T, FieldType>(this Queryable<T> queryable, string InFieldName, params FieldType[] inValues)
         {
             var type = queryable.Type;
@@ -151,12 +162,14 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 条件筛选 例如：expression 为 it=>it.a  inValues值为 new string[]{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        ///  条件筛选 ( 例如：expression 为 it=>it.id,  inValues值为 new string[]{"1" ,"2"} 生成的SQL就是  id in('1','2') )
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="FieldType">In的字段类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">In的字段（例如：it=>it.id）</param>
+        /// <param name="inValues">In的值的数组集合</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> In<T, FieldType>(this Queryable<T> queryable, Expression<Func<T, object>> expression, params FieldType[] inValues)
         {
 
@@ -166,12 +179,14 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 条件筛选 例如：expression 为 it=>it.a  inValues值为 new list《string》{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        ///  条件筛选 ( 例如：expression 为 it=>it.id,  inValues值为 new string[]{"1" ,"2"} 生成的SQL就是  id in('1','2') )
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="FieldType">In的字段类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">In的字段（例如：it=>it.id）</param>
+        /// <param name="inValues">In的值的集合</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> In<T, FieldType>(this Queryable<T> queryable, Expression<Func<T, object>> expression, List<FieldType> inValues)
         {
 
@@ -180,13 +195,16 @@ namespace SqlSugar
             return In<T, FieldType>(queryable, InFieldName, inValues);
         }
 
+        
         /// <summary>
-        /// 条件筛选 例如：InFieldName 为 a inValues 值为 new list《string》{"a" ,"b"} 生成的SQL就是  a in('a','b')
+        /// 条件筛选 ( 例如：InFieldName 为 id,  inValues值为 new string[]{"1" ,"2"} 生成的SQL就是  id in('1','2') )
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="FieldType">In的字段类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="InFieldName">In的字段名称</param>
+        /// <param name="inValues">In的值的集合</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> In<T, FieldType>(this Queryable<T> queryable, string InFieldName, List<FieldType> inValues)
         {
             return In<T, FieldType>(queryable, InFieldName, inValues.ToArray());
@@ -196,10 +214,10 @@ namespace SqlSugar
         /// <summary>
         /// 排序
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="orderFileds">如：id asc,name desc </param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="orderFileds">排序字符串（例如：id asc,name desc) </param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> OrderBy<T>(this Queryable<T> queryable, string orderFileds)
         {
             queryable.OrderBy = orderFileds.ToSuperSqlFilter();
@@ -209,18 +227,17 @@ namespace SqlSugar
         /// <summary>
         /// 排序
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
         /// <param name="expression">排序字段 it=>it.fieldName </param>
         /// <param name="type">排序类型</param>
-        /// <returns></returns>
+        /// <returns>Queryable</returns>
         public static Queryable<T> OrderBy<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression, OrderByType type = OrderByType.asc)
         {
             ResolveExpress re = new ResolveExpress();
             var field = re.GetExpressionRightField(expression);
-            if (queryable.JoinTable.IsValuable())
-            {
-                field = re.GetExpressionRightFieldByNT(expression);
+            if (queryable.JoinTable.IsValuable()) {
+                 field = re.GetExpressionRightFieldByNT(expression);
             }
             var pre = queryable.OrderBy.IsValuable() ? "," : "";
             queryable.OrderBy += pre + field + " " + type.ToString().ToUpper();
@@ -230,12 +247,12 @@ namespace SqlSugar
         /// <summary>
         /// 排序
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="T2"></typeparam>
-        /// <param name="queryable"></param>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <typeparam name="T2">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
         /// <param name="expression">例如 (s1,s2)=>s1.id,相当于 order by s1.id</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="type">排序类型</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> OrderBy<T, T2>(this Queryable<T> queryable, Expression<Func<T, T2, object>> expression, OrderByType type = OrderByType.asc)
         {
             ResolveExpress re = new ResolveExpress();
@@ -249,10 +266,10 @@ namespace SqlSugar
         /// <summary>
         /// 分组
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression">分组字段 it=>it.fieldName</param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">分组字段 (例如：it=>it.fieldName)</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> GroupBy<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression)
         {
             ResolveExpress re = new ResolveExpress();
@@ -265,10 +282,10 @@ namespace SqlSugar
         /// <summary>
         /// 分组
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="groupFileds">如：id,name </param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="groupFileds">分组字段 (例如：id,name) </param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> GroupBy<T>(this Queryable<T> queryable, string groupFileds)
         {
             queryable.GroupBy = groupFileds.ToSuperSqlFilter();
@@ -279,10 +296,10 @@ namespace SqlSugar
         /// <summary>
         ///  跳过序列中指定数量的元素，然后返回剩余的元素。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="index">指定数量的索引</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Skip<T>(this Queryable<T> queryable, int index)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
@@ -296,10 +313,10 @@ namespace SqlSugar
         /// <summary>
         /// 从起始点向后取指定条数的数据
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="num"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="num">指定条数</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> Take<T>(this Queryable<T> queryable, int num)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
@@ -314,10 +331,10 @@ namespace SqlSugar
         /// <summary>
         ///  返回序列的唯一元素；如果该序列并非恰好包含一个元素，则会引发异常。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
-        public static T Single<T>(this Queryable<T> queryable)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>T</returns>
+        public static T Single<T>(this  Queryable<T> queryable)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
             {
@@ -331,10 +348,10 @@ namespace SqlSugar
         /// <summary>
         ///  返回序列的唯一元素；如果该序列为空返回Default(T),序列超过1条返则抛出异常。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
-        public static T SingleOrDefault<T>(this Queryable<T> queryable)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>T</returns>
+        public static T SingleOrDefault<T>(this  Queryable<T> queryable)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
             {
@@ -353,11 +370,11 @@ namespace SqlSugar
         /// <summary>
         ///  返回序列的唯一元素；如果该序列并非恰好包含一个元素，则会引发异常。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static T Single<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>T</returns>
+        public static T Single<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -371,11 +388,11 @@ namespace SqlSugar
         /// <summary>
         ///  返回序列的唯一元素；如果该序列并非恰好包含一个元素，否则返回null。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static T SingleOrDefault<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>T</returns>
+        public static T SingleOrDefault<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -389,10 +406,10 @@ namespace SqlSugar
         /// <summary>
         ///  返回序列中的第一个元素。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
-        public static T First<T>(this Queryable<T> queryable)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>T</returns>
+        public static T First<T>(this  Queryable<T> queryable)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
             {
@@ -407,10 +424,10 @@ namespace SqlSugar
         /// <summary>
         ///   返回序列中的第一个元素,如果序列为NULL返回default(T)
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
-        public static T FirstOrDefault<T>(this Queryable<T> queryable)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>T</returns>
+        public static T FirstOrDefault<T>(this  Queryable<T> queryable)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
             {
@@ -429,11 +446,11 @@ namespace SqlSugar
         /// <summary>
         /// 返回序列中的第一个元素。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static T First<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>T</returns>
+        public static T First<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
 
             var type = queryable.Type;
@@ -448,11 +465,11 @@ namespace SqlSugar
         /// <summary>
         /// 返回序列中的第一个元素,如果序列为NULL返回default(T)
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static T FirstOrDefault<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>T</returns>
+        public static T FirstOrDefault<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
 
             var type = queryable.Type;
@@ -466,13 +483,13 @@ namespace SqlSugar
 
 
         /// <summary>
-        ///  返回序列的唯一元素；如果该序列并非恰好包含一个元素，则会引发异常。
+        ///  确定序列是否包含任何元素。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static bool Any<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">表达示条件</param>
+        /// <returns>count>0返回true</returns>
+        public static bool Any<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -486,10 +503,10 @@ namespace SqlSugar
         /// <summary>
         ///  确定序列是否包含任何元素
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
-        public static bool Any<T>(this Queryable<T> queryable)
+        /// <typeparam name="T">表实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>count>0返回true</returns>
+        public static bool Any<T>(this  Queryable<T> queryable)
         {
             return queryable.Count() > 0;
         }
@@ -497,11 +514,12 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">原数据实体类型</typeparam>
+        /// <typeparam name="T2">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">给新实体赋值的表达示</param>
+        /// <returns>Queryable</returns>
         public static Queryable<TResult> Select<T, T2, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, TResult>> expression)
         {
             var expStr = expression.ToString();
@@ -516,7 +534,7 @@ namespace SqlSugar
                 Where = queryable.Where,
                 TableName = type.Name,
                 GroupBy = queryable.GroupBy,
-                JoinTable = queryable.JoinTable
+                JoinTable=queryable.JoinTable
             };
             reval.Select = Regex.Match(expStr, @"(?<=\{).*?(?=\})").Value;
             if (reval.Select.IsNullOrEmpty())
@@ -530,12 +548,14 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static Queryable<TResult> Select<T, T2, T3, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, T3, TResult>> expression)
+        /// <typeparam name="T">原数据实体类型</typeparam>
+        /// <typeparam name="T2">原数据实体类型</typeparam>
+        /// <typeparam name="T3">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">给新实体赋值的表达示</param>
+        /// <returns>Queryable</returns>
+        public static Queryable<TResult> Select<T, T2 ,T3, TResult>(this Queryable<T> queryable, Expression<Func<T, T2,T3, TResult>> expression)
         {
             var expStr = expression.ToString();
             var type = typeof(T);
@@ -563,12 +583,15 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static Queryable<TResult> Select<T, T2, T3, T4, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, T3, T4, TResult>> expression)
+        /// <typeparam name="T">原数据实体类型</typeparam>
+        /// <typeparam name="T2">原数据实体类型</typeparam>
+        /// <typeparam name="T3">原数据实体类型</typeparam>
+        /// <typeparam name="T4">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">给新实体赋值的表达示</param>
+        /// <returns>Queryable</returns>
+        public static Queryable<TResult> Select<T, T2, T3,T4, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, T3,T4, TResult>> expression)
         {
             var expStr = expression.ToString();
             var type = typeof(T);
@@ -596,12 +619,16 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static Queryable<TResult> Select<T, T2, T3, T4, T5, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, T3, T4, T5, TResult>> expression)
+        /// <typeparam name="T">原数据实体类型</typeparam>
+        /// <typeparam name="T2">原数据实体类型</typeparam>
+        /// <typeparam name="T3">原数据实体类型</typeparam>
+        /// <typeparam name="T4">原数据实体类型</typeparam>
+        /// <typeparam name="T5">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">给新实体赋值的表达示</param>
+        /// <returns>Queryable</returns>
+        public static Queryable<TResult> Select<T, T2, T3, T4,T5, TResult>(this Queryable<T> queryable, Expression<Func<T, T2, T3, T4,T5, TResult>> expression)
         {
             var expStr = expression.ToString();
             var type = typeof(T);
@@ -629,11 +656,11 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
-        /// <returns></returns>
+        /// <typeparam name="TSource">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">给新实体赋值的表达示</param>
+        /// <returns>Queryable</returns>
         public static Queryable<TResult> Select<TSource, TResult>(this Queryable<TSource> queryable, Expression<Func<TSource, TResult>> expression)
         {
             var type = typeof(TSource);
@@ -658,8 +685,7 @@ namespace SqlSugar
             {
                 reval.Select = Regex.Replace(reval.Select, @"(?<=\=).*?\.", "");
             }
-            else
-            {
+            else {
                 reval.JoinTable = queryable.JoinTable;
             }
             return reval;
@@ -668,10 +694,10 @@ namespace SqlSugar
         /// <summary>
         /// 将源数据对象转换到新对象中
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
+        /// <typeparam name="TSource">原数据实体类型</typeparam>
+        /// <typeparam name="TResult">返回值的新实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="select">查询字符串（例如 id,name）</param>
         /// <returns></returns>
         public static Queryable<TResult> Select<TSource, TResult>(this Queryable<TSource> queryable, string select)
         {
@@ -696,12 +722,11 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 将源数据对象转换到新对象中
+        /// 将select的字段映射到T对象
         /// </summary>
-        /// <typeparam name="TSource"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression"></param>
+        /// <typeparam name="T">数据实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="select">查询字符串（例如 id,name）</param>
         /// <returns></returns>
         public static Queryable<T> Select<T>(this Queryable<T> queryable, string select)
         {
@@ -713,8 +738,8 @@ namespace SqlSugar
         /// <summary>
         /// 获取序列总记录数
         /// </summary>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>int</returns>
         public static int Count<T>(this Queryable<T> queryable)
         {
             StringBuilder sbSql = new StringBuilder();
@@ -725,7 +750,7 @@ namespace SqlSugar
             {
                 tableName = queryable.TableName;
             }
-            sbSql.AppendFormat("SELECT COUNT({3})  FROM [{0}] {1} " + joinInfo + " WHERE 1=1 {2} {4} ", tableName, withNoLock, string.Join("", queryable.Where), "1", queryable.GroupBy.GetGroupBy());
+            sbSql.AppendFormat("SELECT COUNT({3})  FROM [{0}] {1} "+joinInfo+" WHERE 1=1 {2} {4} ", tableName, withNoLock, string.Join("", queryable.Where), "1", queryable.GroupBy.GetGroupBy());
             var count = queryable.DB.GetInt(sbSql.ToString(), queryable.Params.ToArray());
             return count;
         }
@@ -734,11 +759,11 @@ namespace SqlSugar
         /// <summary>
         /// 获取最大值
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="maxField">列</param>
-        /// <returns></returns>
+        /// <typeparam name="TSource">实体类型</typeparam>
+        /// <typeparam name="TResult">返回类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="maxField">列名</param>
+        /// <returns>TResult</returns>
         public static TResult Max<TSource, TResult>(this Queryable<TSource> queryable, string maxField)
         {
             StringBuilder sbSql = new StringBuilder();
@@ -752,11 +777,10 @@ namespace SqlSugar
         /// <summary>
         /// 获取最大值
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="maxField">列</param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">查询字段 (例如：it=>it.fieldName)</param>
+        /// <returns>object</returns>
         public static object Max<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression)
         {
 
@@ -768,11 +792,11 @@ namespace SqlSugar
         /// <summary>
         /// 获取最小值
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="minField">列</param>
-        /// <returns></returns>
+        /// <typeparam name="TSource">实体类型</typeparam>
+        /// <typeparam name="TResult">返回类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="minField">列名</param>
+        /// <returns>TResult</returns>
         public static TResult Min<TSource, TResult>(this Queryable<TSource> queryable, string minField)
         {
             StringBuilder sbSql = new StringBuilder();
@@ -786,11 +810,10 @@ namespace SqlSugar
         /// <summary>
         /// 获取最小值
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="minField">列</param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">查询字段 (例如：it=>it.fieldName)</param>
+        /// <returns>object</returns>
         public static object Min<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression)
         {
             ResolveExpress re = new ResolveExpress();
@@ -800,11 +823,11 @@ namespace SqlSugar
 
 
         /// <summary>
-        /// 将Queryable转换为List《T》集合
+        /// 将Queryable转换T的集合
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>T的集合</returns>
         public static List<T> ToList<T>(this Queryable<T> queryable)
         {
             StringBuilder sbSql = SqlSugarTool.GetQueryableSql<T>(queryable);
@@ -820,34 +843,35 @@ namespace SqlSugar
         /// <summary>
         /// 将Queryable转换为Json
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>json字符串</returns>
         public static string ToJson<T>(this Queryable<T> queryable)
         {
             return JsonConverter.DataTableToJson(ToDataTable<T>(queryable), queryable.DB.SerializerDateFormat);
         }
+
         /// <summary>
-        /// 返回Sql和SqlParameter []
+        /// 返回Sql和参数信息
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
         /// <returns></returns>
         public static KeyValuePair<string, string[]> ToSql<T>(this Queryable<T> queryable)
         {
-            var sql = SqlSugarTool.GetQueryableSql<T>(queryable).ToString();
+            var sql=SqlSugarTool.GetQueryableSql<T>(queryable).ToString();
             var pars = queryable.Params.ToArray();
             var reval = new Dictionary<string, string[]>();
-            reval.Add(sql, pars.Select(it => it.ParameterName + ":" + it.Value).ToArray());
+            reval.Add(sql, pars.Select(it =>it.ParameterName+":"+it.Value).ToArray());
             return reval.First();
         }
 
         /// <summary>
         /// 将Queryable转换为Dynamic
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>dynamic</returns>
         public static dynamic ToDynamic<T>(this Queryable<T> queryable)
         {
             return JsonConverter.ConvertJson(ToJson<T>(queryable));
@@ -856,9 +880,9 @@ namespace SqlSugar
         /// <summary>
         /// 将Queryable转换为DataTable
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <returns>DataTable</returns>
         public static DataTable ToDataTable<T>(this Queryable<T> queryable)
         {
             StringBuilder sbSql = SqlSugarTool.GetQueryableSql<T>(queryable);
@@ -869,13 +893,13 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 将Queryable转换为分页后的List《T》集合
+        /// 将Queryable转换为分页后的List&lt;T&gt;集合
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
         /// <param name="pageIndex">当前页码</param>
         /// <param name="pageSize">每页显示数量</param>
-        /// <returns></returns>
+        /// <returns>T的集合</returns>
         public static List<T> ToPageList<T>(this Queryable<T> queryable, int pageIndex, int pageSize)
         {
             if (queryable.OrderBy.IsNullOrEmpty())
@@ -896,8 +920,8 @@ namespace SqlSugar
         /// <typeparam name="T2">联接的表对象</typeparam>
         /// <param name="queryable"></param>
         /// <param name="expression">表达示</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="type">Join的类型</param>
+        /// <returns>Queryable</returns>
         public static Queryable<T> JoinTable<T, T2>(this Queryable<T> queryable, Expression<Func<T, T2, object>> expression, JoinType type = JoinType.LEFT)
         {
 
@@ -926,12 +950,12 @@ namespace SqlSugar
         /// 联表查询
         /// </summary>
         /// <typeparam name="T">第一个表的对象</typeparam>
-        /// <typeparam name="T2">联接的表对象</typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="expression">表达示</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static Queryable<T> JoinTable<T, T2, T3>(this Queryable<T> queryable, Expression<Func<T, T2, T3, object>> expression, JoinType type = JoinType.LEFT)
+        /// <typeparam name="T2">联接表的对象</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="expression">条件表达示</param>
+        /// <param name="type">Join的类型</param>
+        /// <returns>Queryable</returns>
+        public static Queryable<T> JoinTable<T, T2,T3>(this Queryable<T> queryable, Expression<Func<T, T2,T3, object>> expression, JoinType type = JoinType.LEFT)
         {
 
             ResolveExpress re = new ResolveExpress();
@@ -957,17 +981,17 @@ namespace SqlSugar
         /// <summary>
         /// 联表查询根据字符串
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="queryable"></param>
+        /// <typeparam name="T">第一个表的对象</typeparam>
+        /// <param name="queryable">查询对象</param>
         /// <param name="tableName">表名（可是以表或也可以是SQL语句加括号）</param>
         /// <param name="shortName">表名简写</param>
         /// <param name="onWhere">on后面的条件</param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static Queryable<T> JoinTable<T>(this Queryable<T> queryable, string tableName, string shortName, string onWhere, object whereObj, JoinType type = JoinType.LEFT)
+        /// <param name="type">Join的类型</param>
+        /// <returns>Queryable</returns>
+        public static Queryable<T> JoinTable<T>(this Queryable<T> queryable, string tableName,string shortName,string onWhere,object whereObj, JoinType type = JoinType.LEFT)
         {
 
-            queryable.WhereIndex = queryable.WhereIndex + 100; ;
+            queryable.WhereIndex = queryable.WhereIndex + 100;;
             string joinType = type.ToString();
             string joinStr = string.Format(" {0} JOIN {1} {2} ON {3}  ",
                 /*0*/joinType,

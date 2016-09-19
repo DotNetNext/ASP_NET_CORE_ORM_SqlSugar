@@ -25,7 +25,7 @@ namespace SqlSugar
             List<Dictionary<string, object>> parentRow = new List<Dictionary<string, object>>();
             foreach (DataRow row in table.Rows)
             {
-                Dictionary<string, object>  childRow = new Dictionary<string, object>();
+                Dictionary<string, object> childRow = new Dictionary<string, object>();
                 foreach (DataColumn col in table.Columns)
                 {
                     childRow.Add(col.ColumnName, row[col.ColumnName]);
@@ -58,9 +58,18 @@ namespace SqlSugar
         /// <returns></returns>
         public static dynamic ConvertJson(string json)
         {
-            var dy=JsonConvert.DeserializeObject<dynamic>(json);
+            var dy = JsonConvert.DeserializeObject<dynamic>(json);
             return dy;
         }
 
+        /// <summary>
+        /// 将对象序列化成字符串
+        /// </summary>
+        /// <param name="o"></param>
+        /// <returns></returns>
+        public static string Serialize(object o)
+        {
+            return JsonConvert.SerializeObject(o);
+        }
     }
 }
