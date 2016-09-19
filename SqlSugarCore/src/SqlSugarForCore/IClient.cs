@@ -4,7 +4,6 @@ namespace SqlSugar
 {
     public interface IClient
     {
-
         bool Delete<T, FiledType>(params FiledType[] whereIn);
         bool Delete<T>(System.Linq.Expressions.Expression<Func<T, bool>> expression);
         bool FalseDelete<T, FiledType>(string field, params FiledType[] whereIn);
