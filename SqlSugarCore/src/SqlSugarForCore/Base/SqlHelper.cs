@@ -48,7 +48,6 @@ namespace SqlSugar
         /// <summary>
         /// 开始事务
         /// </summary>
-
         public void BeginTran()
         {
             _tran = _sqlConnection.BeginTransaction();
@@ -101,7 +100,7 @@ namespace SqlSugar
         /// 获取第一行第一列
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public string GetString(string sql, object pars)
         {
@@ -123,7 +122,7 @@ namespace SqlSugar
         /// 获取第一行第一列
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public int GetInt(string sql, object pars)
         {
@@ -178,7 +177,7 @@ namespace SqlSugar
         /// 获取第一行第一列
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public object GetScalar(string sql, object pars)
         {
@@ -215,7 +214,7 @@ namespace SqlSugar
         /// 执行SQL返回受影响行数
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public int ExecuteCommand(string sql, object pars)
         {
@@ -251,7 +250,7 @@ namespace SqlSugar
         /// 获取DataReader
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public SqlDataReader GetReader(string sql, object pars)
         {
@@ -289,7 +288,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public List<T> GetList<T>(string sql, object pars)
         {
@@ -312,9 +311,9 @@ namespace SqlSugar
         /// <summary>
         /// 根据SQL获取T
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">可以是int、string等，也可以是类或者数组、字典</typeparam>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public T GetSingle<T>(string sql, object pars)
         {
@@ -338,7 +337,7 @@ namespace SqlSugar
         /// 获取DataTable
         /// </summary>
         /// <param name="sql"></param>
-        /// <param name="pars"></param>
+        /// <param name="pars">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
         public DataTable GetDataTable(string sql, object pars)
         {
