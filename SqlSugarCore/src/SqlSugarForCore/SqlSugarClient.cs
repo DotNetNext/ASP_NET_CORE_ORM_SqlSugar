@@ -125,7 +125,7 @@ namespace SqlSugar
         {
             if (filterColumns.Values == null || filterColumns.Values.Count == 0)
             {
-                throw new Exception("过滤器的列名集合不能为空SetFilterFilterParas.filters");
+                throw new SqlSugarException("过滤器的列名集合不能为空SetFilterFilterParas.filters");
             }
             _filterColumns = filterColumns;
         }
