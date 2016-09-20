@@ -8,7 +8,7 @@ QQ Group 225982985
 
 #Other versions
 
-ASP.NET CORE MSSQL https://github.com/sunkaixuan/SqlSugar
+ASP.NET 4.0+  MSSQL https://github.com/sunkaixuan/SqlSugar
 
 ASP.NET 4.0+ MYSQL https://github.com/sunkaixuan/MySqlSugar
 
