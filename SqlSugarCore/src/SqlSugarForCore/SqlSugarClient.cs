@@ -28,7 +28,7 @@ namespace SqlSugar
         {
             ConnectionString = connectionString;
             IsNoLock = false;
-        } 
+        }
         #endregion
 
 
@@ -60,7 +60,7 @@ namespace SqlSugar
                 }
             }
             return tableName;
-        } 
+        }
         #endregion
 
 
@@ -68,7 +68,7 @@ namespace SqlSugar
         /// <summary>
         /// 当前连接字符串
         /// </summary>
-        public  string ConnectionString { get;internal set; } 
+        public string ConnectionString { get; internal set; }
         #endregion
 
 
@@ -87,6 +87,11 @@ namespace SqlSugar
         /// 设置禁止更新的列
         /// </summary>
         public string[] DisableUpdateColumns { get; set; }
+
+        /// <summary>
+        /// 设置禁止插入的列
+        /// </summary>
+        public string[] DisableInsertColumns { get; set; }
 
         /// <summary>
         ///设置Queryable或者Sqlable转换成JSON字符串时的日期格式
@@ -125,7 +130,7 @@ namespace SqlSugar
         {
             if (filterColumns.Values == null || filterColumns.Values.Count == 0)
             {
-                throw new SqlSugarException("过滤器的列名集合不能为空SetFilterFilterParas.filters");
+                throw new Exception("过滤器的列名集合不能为空SetFilterFilterParas.filters");
             }
             _filterColumns = filterColumns;
         }
@@ -152,7 +157,7 @@ namespace SqlSugar
             {
                 _serialNumber = serNum;
             }
-        } 
+        }
         #endregion
 
 
@@ -178,7 +183,7 @@ namespace SqlSugar
                 }
             }
             return sqlable;
-        } 
+        }
         #endregion
 
 
@@ -231,7 +236,7 @@ namespace SqlSugar
         public Queryable<T> Queryable<T>(string tableName) where T : new()
         {
             return new Queryable<T>() { DB = this, TableName = tableName };
-        } 
+        }
         #endregion
 
 
@@ -320,7 +325,7 @@ namespace SqlSugar
             fields = null;
             sql = null;
             return reval;
-        } 
+        }
         #endregion
 
 
@@ -362,10 +367,15 @@ namespace SqlSugar
             isIdentity = identities != null && identities.Count > 0;
             //sql语句缓存
             string cacheSqlKey = "db.Insert." + type.FullName;
+            if (this.DisableInsertColumns.IsValuable())
+            {
+                cacheSqlKey = cacheSqlKey + string.Join("", this.DisableInsertColumns);
+            }
             var cacheSqlManager = CacheManager<StringBuilder>.GetInstance();
 
             //属性缓存
             string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
+
             var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
 
             PropertyInfo[] props = null;
@@ -406,6 +416,14 @@ namespace SqlSugar
                             continue;
                         }
                     }
+                    if (this.DisableInsertColumns.IsValuable())
+                    {
+                        if (this.DisableInsertColumns.Any(it => it.ToLower() == prop.Name.ToLower()))
+                        {
+                            continue;
+                        }
+                    }
+
                     //EntityState,@EntityKey
                     if (!isIdentity || identities.Any(it => it.Value.ToLower() != prop.Name.ToLower()))
                     {
@@ -428,6 +446,13 @@ namespace SqlSugar
                     if (this.IsIgnoreErrorColumns)
                     {
                         if (!SqlSugarTool.GetColumnsByTableName(this, typeName).Any(it => it.ToLower() == prop.Name.ToLower()))
+                        {
+                            continue;
+                        }
+                    }
+                    if (this.DisableInsertColumns.IsValuable())
+                    {
+                        if (this.DisableInsertColumns.Any(it => it.ToLower() == prop.Name.ToLower()))
                         {
                             continue;
                         }
@@ -490,7 +515,7 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                throw new SqlSugarException(ex.Message,sql,entity);
+                throw new SqlSugarException(ex.Message, sql, entity);
             }
 
         }
@@ -599,7 +624,7 @@ namespace SqlSugar
             var reval = base.ExecuteCommand(sbSql.ToString());
             sbSql = null;
             return reval > 0;
-        } 
+        }
         #endregion
 
 
@@ -699,7 +724,7 @@ namespace SqlSugar
             }
             catch (Exception ex)
             {
-                throw new SqlSugarException(ex.Message, sbSql.ToString(), new { rowObj = rowObj, expression = expression+"" });
+                throw new SqlSugarException(ex.Message, sbSql.ToString(), new { rowObj = rowObj, expression = expression + "" });
             }
         }
 
@@ -793,7 +818,7 @@ namespace SqlSugar
             {
                 throw new SqlSugarException(ex.Message, sbSql.ToString(), new { rowObj = rowObj, whereIn = whereIn });
             }
-        } 
+        }
         #endregion
 
 
@@ -944,7 +969,7 @@ namespace SqlSugar
             int deleteRowCount = ExecuteCommand(sql, re.Paras.ToArray());
             isSuccess = deleteRowCount > 0;
             return isSuccess;
-        } 
+        }
         #endregion
 
 
@@ -953,7 +978,7 @@ namespace SqlSugar
         /// <summary>
         /// 生成实体的对象
         /// </summary>
-        public ClassGenerating ClassGenerating = new ClassGenerating(); 
+        public ClassGenerating ClassGenerating = new ClassGenerating();
         #endregion
 
 
@@ -965,7 +990,7 @@ namespace SqlSugar
         public void RemoveAllCache<T>()
         {
             CacheManager<T>.GetInstance().RemoveAll(c => true);
-        } 
+        }
 
         #endregion
 

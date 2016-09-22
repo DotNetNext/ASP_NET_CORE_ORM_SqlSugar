@@ -51,6 +51,10 @@ namespace SqlSugar
             /// 是否允许为null
             /// </summary>
             public object IS_NULLABLE { get; set; }
+            /// <summary>
+            /// 是否是主键
+            /// </summary>
+            public object IS_PRIMARYKEY { get; set; }
         }
 
         /// <summary>
@@ -73,7 +77,7 @@ namespace SqlSugar
             /// <summary>
             /// 获取流水号函数(解决事务中死锁BUG)
             /// </summary>
-            public Func<SqlSugarClient,string> GetNumFuncWithDb { get; set; }
+            public Func<SqlSugarClient, string> GetNumFuncWithDb { get; set; }
         }
 
         /// <summary>
