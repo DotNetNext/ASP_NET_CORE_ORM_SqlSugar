@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SqlSugar;
 using NewTest.Demos;
+using System.Text;
 
 namespace SqlSugarTest
 {
@@ -11,6 +12,9 @@ namespace SqlSugarTest
     {
         public static void Main(string[] args)
         {
+            //解决Core输出中文乱码
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
 
             //设置执行的DEMO
             string switchOn = "select";
