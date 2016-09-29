@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using NewTest.Dao;
+using Models;
+using System.Data.SqlClient;
 using SqlSugar;
-namespace SqlSugarTest.Demos
+
+namespace NewTest.Demos
 {
+    //事务
     public class Tran : IDemos
     {
+
         public void Init()
         {
+            Console.WriteLine("启动Tran.Init");
             using (SqlSugarClient db = SugarDao.GetInstance())//开启数据库连接
             {
                 db.IsNoLock = true;//启用无锁查询

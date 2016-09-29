@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
-namespace SqlSugarTest.Demos
+using System.Text;
+namespace NewTest.Demos
 {
-    public interface IDemos
-    {
-        void Init();
-    }
+        public interface IDemos
+        {
+            void Init();
+        }
 }

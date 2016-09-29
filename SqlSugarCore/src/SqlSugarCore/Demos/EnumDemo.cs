@@ -1,24 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using NewTest.Dao;
+using Models;
+using System.Data.SqlClient;
 using SqlSugar;
-namespace SqlSugarTest.Demos
+
+namespace NewTest.Demos
 {
-    public class EnumType : IDemos
+    //枚举的支持
+    public class EnumDemo:IDemos
     {
+
         public void Init()
         {
+            Console.WriteLine("启动EnumDemo.Init");
             using (SqlSugarClient db = SugarDao.GetInstance())
             {
                 var stuList = db.Queryable<Student>().ToList();
-                db.Insert<Student>(new Student() { sch_id = SchoolEnum.蓝翔2 });
-                db.Update<Student>(new Student() { sch_id = SchoolEnum.蓝翔1, id = 1 });
-                var stuList2 = db.Queryable<Student>().Where(it => it.sch_id == SchoolEnum.蓝翔1).ToList();
+                db.Insert<Student>(new Student() { sch_id = SchoolEnum.北大青鸟 });
+                db.Update<Student>(new Student() { sch_id = SchoolEnum.it清华, id = 11 });
+                var stuList2 = db.Queryable<Student>().Where(it => it.sch_id == SchoolEnum.全智).ToList();
             }
         }
-
-
         public class Student
         {
 
@@ -55,14 +60,18 @@ namespace SqlSugarTest.Demos
             /// 默认:- 
             /// 可空:False 
             /// </summary>
-            public Boolean isOk { get; set; }
+            public bool isOk { get; set; }
 
         }
 
         public enum SchoolEnum
         {
-            蓝翔1 = 1,
-            蓝翔2 = 2
+            北大青鸟 = 1,
+            it清华 = 2,
+            全智 = 3
         }
     }
+
+
+
 }

@@ -11,15 +11,32 @@ namespace SqlSugar
     /// 作者：sunkaixuan 
     /// 创建时间：2016/7/31
     /// 修改时间：-
+    /// 说明：让.netCore支持DataSet
+    /// </summary>
+    public class DataSet{
+    
+    }
+
+    /// <summary>
+    /// 作者：sunkaixuan 
+    /// 创建时间：2016/7/31
+    /// 修改时间：-
     /// 说明：让.netCore支持DataTable
     /// </summary>
     public class DataTable
     {
+        /// <summary>
+        /// 列信息
+        /// </summary>
         public DataColumnCollection Columns = new DataColumnCollection();
-
+        /// <summary>
+        /// 行信息
+        /// </summary>
         public DataRowCollection Rows = new DataRowCollection();
     }
-
+    /// <summary>
+    /// 数据列
+    /// </summary>
     public class DataColumn
     {
         public DataColumn()
@@ -38,7 +55,9 @@ namespace SqlSugar
         public string ColumnName { get; internal set; }
         public object DataType { get; internal set; }
     }
-
+    /// <summary>
+    /// 数据列集合
+    /// </summary>
     public class DataColumnCollection : IEnumerable, ICollection, IEnumerator
     {
         public DataColumn this[int thisIndex]
@@ -131,7 +150,9 @@ namespace SqlSugar
             return (this.cols.Any(it => it.ColumnName == name));
         }
     }
-
+    /// <summary>
+    /// 数据行集合
+    /// </summary>
     public class DataRowCollection : IEnumerable, ICollection, IEnumerator
     {
 
@@ -224,6 +245,9 @@ namespace SqlSugar
             Rows.Add(daRow);
         }
     }
+    /// <summary>
+    /// 数据行
+    /// </summary>
 
     public class DataRow
     {
@@ -266,7 +290,9 @@ namespace SqlSugar
             return (this.obj.ContainsKey(columnName));
         }
     }
-
+    /// <summary>
+    /// 数据填充器
+    /// </summary>
     public class SqlDataAdapter
     {
         private SqlCommand command;
@@ -325,6 +351,11 @@ namespace SqlSugar
                 }
             }
 
+        }
+
+        internal void Fill(DataSet ds)
+        {
+            throw new NotImplementedException("DataSet未实现，敬请期待。");
         }
     }
 }

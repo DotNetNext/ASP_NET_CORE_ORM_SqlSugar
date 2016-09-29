@@ -18,7 +18,7 @@ namespace SqlSugar
     {
 
         /// <summary>
-        /// 数组字串转换成SQL参数格式，例如: 参数 new int{1,2,3} 反回 "'1','2','3'"
+        /// 将数组转换成Where In 需要的格式(例如:参数 new int{1,2,3} 反回 "'1','2','3'")
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
@@ -34,7 +34,7 @@ namespace SqlSugar
             }
         }
         /// <summary>
-        /// 将字符串转换成SQL参数格式，例如: 参数value返回'value'
+        /// 将字符串转换成SQL参数所需要的格式(例如: 参数value返回'value')
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -43,7 +43,7 @@ namespace SqlSugar
             return string.Format("'{0}'", value.ToSqlFilter());
         }
         /// <summary>
-        /// SQL关键字过滤,过滤拉姆达式中的特殊字符，出现特殊字符则引发异常
+        ///SQL注入过滤
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -51,10 +51,11 @@ namespace SqlSugar
         {
             if (!value.IsNullOrEmpty())
             {
-                if (Regex.IsMatch(value, @"'|%|0x|(\@.*\=)", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(value, @"%\d|0x\d|0x[0-9,a-z]{6,300}|(\@.*\=)", RegexOptions.IgnoreCase))
                 {
                     throw new SqlSugarException("查询参数不允许存在特殊字符。");
                 }
+                value = value.Replace("'", "''");
             }
             return value;
         }
@@ -78,7 +79,7 @@ namespace SqlSugar
         /// </summary>
         /// <param name="isNoLock"></param>
         /// <returns></returns>
-        public static string GetLockString(this bool isNoLock)
+        internal static string GetLockString(this bool isNoLock)
         {
             return isNoLock ? "WITH(NOLOCK)" : null; ;
         }
@@ -87,7 +88,7 @@ namespace SqlSugar
         /// </summary>
         /// <param name="selectFileds"></param>
         /// <returns></returns>
-        public static string GetSelectFiles(this string selectFileds)
+        internal static string GetSelectFiles(this string selectFileds)
         {
             return selectFileds.IsNullOrEmpty() ? "*" : selectFileds;
         }
@@ -96,7 +97,7 @@ namespace SqlSugar
         /// </summary>
         /// <param name="groupByFileds"></param>
         /// <returns></returns>
-        public static string GetGroupBy(this string groupByFileds)
+        internal static string GetGroupBy(this string groupByFileds)
         {
             return groupByFileds.IsNullOrEmpty() ? "" : " GROUP BY " + groupByFileds;
         }
@@ -104,7 +105,7 @@ namespace SqlSugar
         /// 将Request里的参数转成SqlParameter[]
         /// </summary>
         /// <returns></returns>
-        public static void RequestParasToSqlParameters(SqlParameterCollection  oldParas)
+        internal static void RequestParasToSqlParameters(SqlParameterCollection  oldParas)
         {
             var oldParaList= oldParas.Cast<SqlParameter>().ToList();
             var paraDictionarAll =SqlSugarTool.GetParameterDictionary();
@@ -123,9 +124,5 @@ namespace SqlSugar
             }
         }
 
-        internal static void RequestParasToSqlParameters(object parameters)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

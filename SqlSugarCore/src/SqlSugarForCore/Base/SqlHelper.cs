@@ -19,22 +19,42 @@ namespace SqlSugar
         SqlConnection _sqlConnection;
         SqlTransaction _tran = null;
         /// <summary>
+        /// 是否启用日志事件(默认为:false)
+        /// </summary>
+        public bool IsEnableLogEvent = false;
+        /// <summary>
+        /// 执行访数据库前的回调函数  (sql,pars)=>{}
+        /// </summary>
+        public Action<string, string> LogEventStarting = null;
+        /// <summary>
+        /// 执行访数据库后的回调函数  (sql,pars)=>{}
+        /// </summary>
+        public Action<string, string> LogEventCompleted = null;
+        /// <summary>
         /// 是否清空SqlParameters
         /// </summary>
         public bool IsClearParameters = true;
         /// <summary>
-        /// 请求超时时间
+        /// 设置在终止执行命令的尝试并生成错误之前的等待时间。（单位：秒）
         /// </summary>
         public int CommandTimeOut = 30000;
-    
-        private bool IsGetPageParas = false;
-
+        /// <summary>
+        /// 将页面参数自动填充到SqlParameter []，无需在程序中指定参数
+        /// 例如：
+        ///     var list = db.Queryable&lt;Student&gt;().Where("id=@id").ToList();
+        ///     以前写法
+        ///     var list = db.Queryable&lt;Student&gt;().Where("id=@id", new { id=Request["id"] }).ToList();
+        /// </summary>
+        public bool IsGetPageParas = false;
+        /// <summary>
+        /// 初始化 SqlHelper 类的新实例
+        /// </summary>
+        /// <param name="connectionString"></param>
         public SqlHelper(string connectionString)
         {
             _sqlConnection = new SqlConnection(connectionString);
             _sqlConnection.Open();
         }
-
         /// <summary>
         /// 获取当前数据库连接对象
         /// </summary>
@@ -61,12 +81,19 @@ namespace SqlSugar
         {
             _tran = _sqlConnection.BeginTransaction(iso);
         }
-
+        /// <summary>
+        /// 开始事务
+        /// </summary>
+        /// <param name="transactionName"></param>
         public void BeginTran(string transactionName)
         {
             _tran = _sqlConnection.BeginTransaction(transactionName);
         }
-
+        /// <summary>
+        /// 开始事务
+        /// </summary>
+        /// <param name="iso">指定事务行为</param>
+        /// <param name="transactionName"></param>
         public void BeginTran(IsolationLevel iso, string transactionName)
         {
             _tran = _sqlConnection.BeginTransaction(iso, transactionName);
@@ -192,6 +219,7 @@ namespace SqlSugar
         /// <returns></returns>
         public object GetScalar(string sql, params SqlParameter[] pars)
         {
+            ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
             if (_tran != null)
             {
@@ -207,6 +235,7 @@ namespace SqlSugar
             object scalar = sqlCommand.ExecuteScalar();
             scalar = (scalar == null ? 0 : scalar);
             sqlCommand.Parameters.Clear();
+            ExecLogEvent(sql, pars, false);
             return scalar;
         }
 
@@ -229,6 +258,7 @@ namespace SqlSugar
         /// <returns></returns>
         public int ExecuteCommand(string sql, params SqlParameter[] pars)
         {
+            ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
             sqlCommand.CommandTimeout = this.CommandTimeOut;
             if (_tran != null)
@@ -243,6 +273,7 @@ namespace SqlSugar
             }
             int count = sqlCommand.ExecuteNonQuery();
             sqlCommand.Parameters.Clear();
+            ExecLogEvent(sql, pars, false);
             return count;
         }
 
@@ -265,6 +296,7 @@ namespace SqlSugar
         /// <returns></returns>
         public SqlDataReader GetReader(string sql, params SqlParameter[] pars)
         {
+            ExecLogEvent(sql, pars, true);
             SqlCommand sqlCommand = new SqlCommand(sql, _sqlConnection);
             sqlCommand.CommandTimeout = this.CommandTimeOut;
             if (_tran != null)
@@ -280,6 +312,7 @@ namespace SqlSugar
             SqlDataReader sqlDataReader = sqlCommand.ExecuteReader();
             if (IsClearParameters)
                 sqlCommand.Parameters.Clear();
+            ExecLogEvent(sql, pars, false);
             return sqlDataReader;
         }
 
@@ -352,6 +385,7 @@ namespace SqlSugar
         /// <returns></returns>
         public DataTable GetDataTable(string sql, params SqlParameter[] pars)
         {
+            ExecLogEvent(sql, pars, true);
             SqlDataAdapter _sqlDataAdapter = new SqlDataAdapter(sql, _sqlConnection);
             _sqlDataAdapter.SelectCommand.Parameters.AddRange(pars);
             if (IsGetPageParas)
@@ -366,9 +400,64 @@ namespace SqlSugar
             DataTable dt = new DataTable();
             _sqlDataAdapter.Fill(dt);
             _sqlDataAdapter.SelectCommand.Parameters.Clear();
+            ExecLogEvent(sql, pars, false);
             return dt;
         }
+        /// <summary>
+        /// 获取DataSet
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public DataSet GetDataSetAll(string sql, object pars)
+        {
+            return GetDataSetAll(sql, SqlSugarTool.GetParameters(pars));
+        }
+        /// <summary>
+        /// 获取DataSet
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="pars"></param>
+        /// <returns></returns>
+        public DataSet GetDataSetAll(string sql, params SqlParameter[] pars)
+        {
+            ExecLogEvent(sql, pars, true);
+            SqlDataAdapter _sqlDataAdapter = new SqlDataAdapter(sql, _sqlConnection);
+            if (_tran != null)
+            {
+                _sqlDataAdapter.SelectCommand.Transaction = _tran;
+            }
+            if (IsGetPageParas)
+            {
+                SqlSugarToolExtensions.RequestParasToSqlParameters(_sqlDataAdapter.SelectCommand.Parameters);
+            }
+            _sqlDataAdapter.SelectCommand.CommandTimeout = this.CommandTimeOut;
+            _sqlDataAdapter.SelectCommand.Parameters.AddRange(pars);
+            DataSet ds = new DataSet();
+            _sqlDataAdapter.Fill(ds);
+            _sqlDataAdapter.SelectCommand.Parameters.Clear();
+            ExecLogEvent(sql, pars, false);
+            return ds;
+        }
 
+        private void ExecLogEvent(string sql, SqlParameter[] pars, bool isStarting = true)
+        {
+            if (IsEnableLogEvent)
+            {
+                Action<string, string> action = isStarting ? LogEventStarting : LogEventCompleted;
+                if (action != null)
+                {
+                    if (pars == null || pars.Length == 0)
+                    {
+                        action(sql, null);
+                    }
+                    else
+                    {
+                        action(sql, JsonConverter.Serialize(pars.Select(it => new { key = it.ParameterName, value = it.Value })));
+                    }
+                }
+            }
+        }
         /// <summary>
         /// 释放数据库连接对象
         /// </summary>

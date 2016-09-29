@@ -12,12 +12,12 @@ namespace SqlSugar
     /// <summary>
     /// ** 描述：拉姆达解析类
     /// ** 创始时间：2015-7-20
-    /// ** 修改时间：-
+    /// ** 修改时间：2016-9-26
     /// ** 作者：sunkaixuan
     /// ** qq：610262374 
     /// ** 使用说明：使用请注名作者
     /// </summary>
-    internal class ResolveExpress
+    internal partial class ResolveExpress
     {
         /// <summary>
         /// 解析拉姆达
@@ -33,55 +33,6 @@ namespace SqlSugar
         public List<SqlParameter> Paras = new List<SqlParameter>();
         private int SameIndex = 1;
 
-        /// <summary>
-        /// 获取拉姆达表达式的字段值
-        /// </summary>
-        /// <param name="exp"></param>
-        /// <returns></returns>
-        public string GetExpressionRightField(Expression exp)
-        {
-            LambdaExpression lambda = exp as LambdaExpression;
-            if (lambda.Body.NodeType.IsIn(ExpressionType.Convert))
-            {
-                var memberExpr =
-                      ((UnaryExpression)lambda.Body).Operand as MemberExpression;
-                return memberExpr.Member.Name;
-            }
-            else if (lambda.Body.NodeType.IsIn(ExpressionType.MemberAccess))
-            {
-                return (lambda.Body as MemberExpression).Member.Name;
-            }
-            else
-            {
-                Check.Exception(true, "不是有效拉姆达格式" + exp.ToString());
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// 获取拉姆达表达式的字段值多个T模式
-        /// </summary>
-        /// <param name="exp"></param>
-        /// <returns></returns>
-        public string GetExpressionRightFieldByNT(Expression exp)
-        {
-            LambdaExpression lambda = exp as LambdaExpression;
-            if (lambda.Body.NodeType.IsIn(ExpressionType.Convert))
-            {
-                var memberExpr =
-                      ((UnaryExpression)lambda.Body).Operand as MemberExpression;
-                return memberExpr.ToString();
-            }
-            else if (lambda.Body.NodeType.IsIn(ExpressionType.MemberAccess))
-            {
-                return lambda.Body.ToString();
-            }
-            else
-            {
-                Check.Exception(true, "不是有效拉姆达格式" + exp.ToString());
-                return null;
-            }
-        }
 
         /// <summary>
         /// 解析表达式
@@ -108,36 +59,17 @@ namespace SqlSugar
         private void Init(ResolveExpress re, Expression exp)
         {
             ResolveExpress.MemberType type = ResolveExpress.MemberType.None;
-            var expStr = exp.ToString();
-            var isNotBool = !expStr.Contains("True") && !expStr.Contains("False");
-            var isContainsNot = expStr.Contains("Not");
-            if (isContainsNot && expStr.IsMatch(@" => Not\(.+?\)") && !expStr.Contains("Contains"))
+            //解析表达式
+            this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type));
+            //还原bool值
+            foreach (var item in ConstantBoolDictionary)
             {
-                this.SqlWhere = string.Format(" AND {0}=0 or {0} is null ", Regex.Match(expStr, @" => Not\(.+\.(.+?)\)").Groups[1].Value);
-            }
-            else if (isNotBool)
-            {
-                //解析表达式
-                this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type));
-            }
-            else
-            {
-                var isTrue = Regex.IsMatch(expStr, @"\=\> True$");
-                var isFalse = Regex.IsMatch(expStr, @"\=\> False$");
-                if (isFalse)
+                if (this.SqlWhere.IsValuable())
                 {
-                    this.SqlWhere = string.Format(" AND 1<>1 ");
+                    this.SqlWhere = this.SqlWhere.Replace(item.Key.ToString(), item.ConditionalValue);
                 }
-                else if (isTrue)
-                {
+            }
 
-                }
-                else
-                {
-                    //解析表达式
-                    this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type));
-                }
-            }
         }
 
         /// <summary>
@@ -166,6 +98,16 @@ namespace SqlSugar
                 var isKeyOperValue = leftType == MemberType.Key && rightType == MemberType.Value;
                 var isValueOperKey = rightType == MemberType.Key && leftType == MemberType.Value;
                 #region 处理 null
+
+                if (isKeyOperValue && right.IsGuid() && ConstantBoolDictionary.Any(it => it.Key.ToString() == right))
+                {
+                    right = ConstantBoolDictionary.Single(it => it.Key.ToString() == right).NewValue;
+                }
+                if (isValueOperKey && ConstantBoolDictionary.Any(it => it.Key.ToString() == left))
+                {
+                    left = ConstantBoolDictionary.Single(it => it.Key.ToString() == left).NewValue;
+                }
+
                 if (isKeyOperValue & (right == "null" || right == null) && oper.Trim() == "=")
                 {
                     var oldLeft = AddParas(ref left, right);
@@ -252,6 +194,11 @@ namespace SqlSugar
                     type = MemberType.Value;
                     return MethodToString(methodName, mce, ref type);
                 }
+                else if (methodName == "IsNullOrEmpty")
+                {
+                    type = MemberType.Value;
+                    return IsNullOrEmpty(methodName, mce, isTure);
+                }
                 else
                 {
                     type = MemberType.Value;
@@ -265,6 +212,13 @@ namespace SqlSugar
                 ConstantExpression ce = ((ConstantExpression)exp);
                 if (ce.Value == null)
                     return "null";
+                else if (ce.Value.ToString().IsIn("True", "False"))//是bool值
+                {
+                    var ceType = ce.Value.GetType();
+                    var ceValue = ce.Value.ToString();
+                    var ceNewValue = ConstantBoolDictionary.Single(it => it.Type == ceType && it.OldValue.ToLower() == ceValue.ToLower());
+                    return ceNewValue.Key.ToString();
+                }
                 else
                 {
                     return ce.Value.ToString();
@@ -281,47 +235,7 @@ namespace SqlSugar
                     {
                         // var dynInv = Expression.Lambda(exp).Compile().DynamicInvoke();原始写法性能极慢，下面写法性能提高了几十倍
                         // var dynInv= Expression.Lambda(me.Expression as ConstantExpression).Compile().DynamicInvoke();
-                        var conExp = me.Expression as ConstantExpression;
-                        if (conExp != null)
-                        {
-                            dynInv = (me.Member as System.Reflection.FieldInfo).GetValue((me.Expression as ConstantExpression).Value);
-                        }
-                        else
-                        {
-
-                            var memberInfos = new Stack<MemberInfo>();
-
-                            // "descend" toward's the root object reference:
-                            while (exp is MemberExpression)
-                            {
-                                var memberExpr = exp as MemberExpression;
-                                memberInfos.Push(memberExpr.Member);
-                                exp = memberExpr.Expression;
-                            }
-
-                            // fetch the root object reference:
-                            var constExpr = exp as ConstantExpression;
-                            var objReference = constExpr.Value;
-
-                            // "ascend" back whence we came from and resolve object references along the way:
-                            while (memberInfos.Count > 0)  // or some other break condition
-                            {
-                                var mi = memberInfos.Pop();
-                                if (mi.MemberType == MemberTypes.Property)
-                                {
-                                    objReference = objReference.GetType()
-                                                               .GetProperty(mi.Name)
-                                                               .GetValue(objReference, null);
-                                }
-                                else if (mi.MemberType == MemberTypes.Field)
-                                {
-                                    objReference = objReference.GetType()
-                                                               .GetField(mi.Name)
-                                                               .GetValue(objReference);
-                                }
-                            }
-                            dynInv = objReference;
-                        }
+                        SetMemberValueToDynInv(ref exp, me, ref dynInv);
                     }
                     catch (Exception ex)
                     {
@@ -329,7 +243,7 @@ namespace SqlSugar
                         {
                             return DateTime.Now.ToString();
                         }
-                        Check.Exception(true, "错误信息:{0} \r\n message:{1}", "拉姆达解析出错,参数可支持的函数有 Trim 、Contains 、ObjToXXX、 Convert.ToXXX、Contains、StartsWith和StartsEnd。 ", ex.Message);
+                        Check.Exception(true, "错误信息:{0} \r\n message:{1}", ExpToSqlError, ex.Message);
                     }
 
                     if (dynInv == null) return null;
@@ -353,58 +267,63 @@ namespace SqlSugar
             {
                 UnaryExpression ue = ((UnaryExpression)exp);
                 var mex = ue.Operand;
-                return CreateSqlElements(mex, ref type, false);
+                var cse = CreateSqlElements(mex, ref type, false);
+                if (type == MemberType.None && ue.NodeType.ToString() == "Not")
+                {
+                    cse = " NOT " + cse;
+                }
+                return cse;
+            }
+            else if (exp!=null&&exp.NodeType.IsIn(ExpressionType.New, ExpressionType.NewArrayBounds, ExpressionType.NewArrayInit))
+            {
+                throw new SqlSugarException("拉姆达表达式内不支持new对象，请提取变量后在赋值，错误信息" + exp.ToString());
             }
             return null;
         }
 
-        /// <summary>
-        /// 拉姆达函数处理
-        /// </summary>
-        /// <param name="methodName"></param>
-        /// <param name="mce"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private string MethodTo(string methodName, MethodCallExpression mce, ref MemberType type)
+        private static void SetMemberValueToDynInv(ref Expression exp, MemberExpression me, ref object dynInv)
         {
-            string value = string.Empty;
-            if (mce.Arguments.IsValuable())
+            var conExp = me.Expression as ConstantExpression;
+            if (conExp != null)
             {
-                value = CreateSqlElements(mce.Arguments.FirstOrDefault(), ref type);
+                dynInv = (me.Member as System.Reflection.FieldInfo).GetValue((me.Expression as ConstantExpression).Value);
             }
             else
             {
-                value = MethodToString(methodName, mce, ref type); ;
-            }
-            if (methodName == "ToDateTime" || methodName == "ObjToDate")
-            {
-                return Convert.ToDateTime(value).ToString();
-            }
-            else if (methodName.StartsWith("ToInt"))
-            {
-                return Convert.ToInt32(value).ToString();
-            }
-            else if (methodName.StartsWith("Trim"))
-            {
-                return (value.ObjToString()).Trim();
-            }
-            else if (methodName.StartsWith("ObjTo"))
-            {
-                return value;
-            }
-            return value;
-        }
 
-        /// <summary>
-        /// 拉姆达ToString函数处理
-        /// </summary>
-        /// <param name="methodName"></param>
-        /// <param name="mce"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private string MethodToString(string methodName, MethodCallExpression mce, ref MemberType type)
-        {
-            return CreateSqlElements(mce.Object, ref type);
+                var memberInfos = new Stack<MemberInfo>();
+
+                // "descend" toward's the root object reference:
+                while (exp is MemberExpression)
+                {
+                    var memberExpr = exp as MemberExpression;
+                    memberInfos.Push(memberExpr.Member);
+                    exp = memberExpr.Expression;
+                }
+
+                // fetch the root object reference:
+                var constExpr = exp as ConstantExpression;
+                var objReference = constExpr.Value;
+
+                // "ascend" back whence we came from and resolve object references along the way:
+                while (memberInfos.Count > 0)  // or some other break condition
+                {
+                    var mi = memberInfos.Pop();
+                    if (mi.MemberType == MemberTypes.Property)
+                    {
+                        objReference = objReference.GetType()
+                                                   .GetProperty(mi.Name)
+                                                   .GetValue(objReference, null);
+                    }
+                    else if (mi.MemberType == MemberTypes.Field)
+                    {
+                        objReference = objReference.GetType()
+                                                   .GetField(mi.Name)
+                                                   .GetValue(objReference);
+                    }
+                }
+                dynInv = objReference;
+            }
         }
 
         /// <summary>
@@ -460,58 +379,6 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 拉姆达StartsWith函数处理
-        /// </summary>
-        /// <param name="methodName"></param>
-        /// <param name="mce"></param>
-        /// <param name="isTure"></param>
-        /// <returns></returns>
-        private string StartsWith(string methodName, MethodCallExpression mce, bool isTure)
-        {
-            MemberType leftType = MemberType.None;
-            MemberType rightType = MemberType.None;
-            var left = CreateSqlElements(mce.Object, ref leftType);
-            var right = CreateSqlElements(mce.Arguments[0], ref rightType);
-            var oldLeft = AddParas(ref left, right);
-            return string.Format("({0} {1} LIKE @{2}+'%')", oldLeft, isTure == false ? "  NOT " : null, left);
-        }
-
-        /// <summary>
-        /// 拉姆达EndWith函数处理
-        /// </summary>
-        /// <param name="methodName"></param>
-        /// <param name="mce"></param>
-        /// <param name="isTure"></param>
-        /// <returns></returns>
-        private string EndWith(string methodName, MethodCallExpression mce, bool isTure)
-        {
-            MemberType leftType = MemberType.None;
-            MemberType rightType = MemberType.None;
-            var left = CreateSqlElements(mce.Object, ref leftType);
-            var right = CreateSqlElements(mce.Arguments[0], ref rightType);
-            var oldLeft = AddParas(ref left, right);
-            return string.Format("({0} {1} LIKE '%'+@{2})", oldLeft, isTure == false ? "  NOT " : null, left);
-        }
-
-        /// <summary>
-        /// 拉姆达Contains函数处理
-        /// </summary>
-        /// <param name="methodName"></param>
-        /// <param name="mce"></param>
-        /// <param name="isTure"></param>
-        /// <returns></returns>
-        private string Contains(string methodName, MethodCallExpression mce, bool isTure)
-        {
-            MemberType leftType = MemberType.None;
-            MemberType rightType = MemberType.None;
-            var left = CreateSqlElements(mce.Object, ref leftType);
-            var right = CreateSqlElements(mce.Arguments[0], ref rightType);
-            var oldLeft = AddParas(ref left, right);
-            return string.Format("({0} {1} LIKE '%'+@{2}+'%')", oldLeft, isTure == false ? "  NOT " : null, left);
-        }
-
-
-        /// <summary>
         /// 根据条件生成对应的sql查询操作符
         /// </summary>
         /// <param name="expressiontype"></param>
@@ -550,18 +417,9 @@ namespace SqlSugar
                 case ExpressionType.MultiplyChecked:
                     return "*";
                 default:
-                    throw new SqlSugarException(string.Format("拉姆达解析出错：不支持{0}此种运算符查找！" + expressiontype));
+                    throw new SqlSugarException(string.Format(OperatorError + expressiontype));
             }
         }
 
-        /// <summary>
-        /// 拉姆达成员类型
-        /// </summary>
-        public enum MemberType
-        {
-            None = 0,
-            Key = 1,
-            Value = 2
-        }
     }
 }

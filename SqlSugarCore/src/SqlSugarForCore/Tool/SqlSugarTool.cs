@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
 
+
 namespace SqlSugar
 {
     /// <summary>
@@ -39,7 +40,7 @@ namespace SqlSugar
         internal static Type DicArraySO = typeof(Dictionary<string, object>);
 
         /// <summary>
-        /// Reader转成List《T》
+        /// Reader转成T的集合
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="dr"></param>
@@ -94,7 +95,7 @@ namespace SqlSugar
             catch (Exception ex)
             {
                 if (isClose) { dr.Close(); dr.Dispose(); dr = null; }
-                throw ex;
+                Check.Exception(true,"错误信息：实体映射出错。\r\n错误详情：{0}",ex.Message);
             }
             return list;
         }
@@ -206,15 +207,14 @@ namespace SqlSugar
                     if (type == SqlSugarTool.DicArraySO)
                     {
                         var newObj = (Dictionary<string, object>)obj;
-                        var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
+                        var pars = newObj.Select(it=>new SqlParameter("@"+it.Key,it.Value));
                         foreach (var par in pars)
                         {
                             SetParSize(par);
                         }
                         listParams.AddRange(pars);
                     }
-                    else
-                    {
+                    else {
 
                         var newObj = (Dictionary<string, string>)obj;
                         var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
@@ -503,7 +503,7 @@ namespace SqlSugar
         /// <returns></returns>
         public static Dictionary<string, string> GetParameterDictionary(bool isNotNullAndEmpty = false)
         {
-            throw new Exception("未实现");
+            throw new SqlSugarException("Core不支持该函数");
         }
 
         internal static void GetSqlableSql(Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, StringBuilder sbSql)
@@ -536,12 +536,12 @@ namespace SqlSugar
         /// <returns></returns>
         public static SqlParameter[] GetParameterArray(bool isNotNullAndEmpty = false)
         {
-            throw new Exception("未实现");
+            throw new SqlSugarException("Core不支持该函数");
         }
 
         internal static StringBuilder GetQueryableSql<T>(SqlSugar.Queryable<T> queryable)
         {
-            string joinInfo = string.Join(" ", queryable.JoinTable);
+            string joinInfo = string.Join(" ", queryable.JoinTableValue);
             StringBuilder sbSql = new StringBuilder();
             string tableName = queryable.TableName.IsNullOrEmpty() ? queryable.TName : queryable.TableName;
             if (queryable.DB.Language.IsValuable() && queryable.DB.Language.Suffix.IsValuable())
@@ -561,9 +561,9 @@ namespace SqlSugar
             {
                 #region  rowNumber
                 string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-                var order = queryable.OrderBy.IsValuable() ? (",row_index=ROW_NUMBER() OVER(ORDER BY " + queryable.OrderBy + " )") : null;
+                var order = queryable.OrderByValue.IsValuable() ? (",row_index=ROW_NUMBER() OVER(ORDER BY " + queryable.OrderByValue + " )") : null;
 
-                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, order, withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy(), joinInfo);
+                sbSql.AppendFormat("SELECT " + queryable.SelectValue.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, order, withNoLock, string.Join("", queryable.WhereValue), queryable.GroupByValue.GetGroupBy(), joinInfo);
                 if (queryable.Skip == null && queryable.Take != null)
                 {
                     if (joinInfo.IsValuable())
@@ -572,7 +572,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
                     }
                     sbSql.Append(") t WHERE t.row_index<=" + queryable.Take);
                 }
@@ -584,7 +584,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
                     }
                     sbSql.Append(") t WHERE t.row_index>" + (queryable.Skip));
                 }
@@ -596,7 +596,7 @@ namespace SqlSugar
                     }
                     else
                     {
-                        sbSql.Insert(0, "SELECT " + queryable.Select.GetSelectFiles() + " FROM ( ");
+                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
                     }
                     sbSql.Append(") t WHERE t.row_index BETWEEN " + (queryable.Skip + 1) + " AND " + (queryable.Skip + queryable.Take));
                 }
@@ -607,8 +607,8 @@ namespace SqlSugar
 
                 #region offset
                 string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-                var order = queryable.OrderBy.IsValuable() ? ("ORDER BY " + queryable.OrderBy + " ") : null;
-                sbSql.AppendFormat("SELECT " + queryable.Select.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, "", withNoLock, string.Join("", queryable.Where), queryable.GroupBy.GetGroupBy(), joinInfo);
+                var order = queryable.OrderByValue.IsValuable() ? ("ORDER BY " + queryable.OrderByValue + " ") : null;
+                sbSql.AppendFormat("SELECT " + queryable.SelectValue.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, "", withNoLock, string.Join("", queryable.WhereValue), queryable.GroupByValue.GetGroupBy(), joinInfo);
                 sbSql.Append(order);
                 if (queryable.Skip != null || queryable.Take != null)
                 {

@@ -16,7 +16,7 @@ namespace SqlSugar
     /// ** 作者：sunkaixuan
     /// ** 使用说明：http://www.cnblogs.com/sunkaixuan/p/4649904.html
     /// </summary>
-    public class SqlSugarClient : SqlHelper, IClient
+    public class SqlSugarClient : SqlHelper
     {
         #region constructor
         /// <summary>
@@ -213,14 +213,14 @@ namespace SqlSugar
                     var filterInfo = _filterFuns[CurrentFilterKey];
                     var filterValue = filterInfo();
                     string whereStr = string.Format(" AND {0} ", filterValue.Key);
-                    queryable.Where.Add(whereStr);
+                    queryable.WhereValue.Add(whereStr);
                     if (filterValue.Value != null)
                         queryable.Params.AddRange(SqlSugarTool.GetParameters(filterValue.Value));
                 }
                 if (_filterColumns.IsValuable() && _filterColumns.ContainsKey(CurrentFilterKey))
                 {
                     var columns = _filterColumns[CurrentFilterKey];
-                    queryable.Select = string.Join(",", columns);
+                    queryable.SelectValue = string.Join(",", columns);
                 }
             }
             return queryable;
@@ -633,7 +633,7 @@ namespace SqlSugar
         /// <summary>
         /// 根据表达式条件将实体对象更新到数据库
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">实体类型</typeparam>
         /// <param name="rowObj">rowObj为匿名对象时只更新指定列( 例如:new{ name='abc'}只更新name )，为T类型将更新整个实体(排除主键、自增列和禁止更新列)</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>更新成功返回true</returns>
@@ -731,12 +731,36 @@ namespace SqlSugar
         /// <summary>
         /// 将实体对象更新到数据库
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="rowObj">rowObj必需包含主键， rowObj为匿名对象时只更新指定列( 例如:new{ name='abc'}只更新name )，为T类型将更新整个实体(排除主键、自增列和禁止更新列)</param>
+        /// <typeparam name="T">实体类型</typeparam>
+        /// <param name="rowObj">rowObj必需包含主键并且不能为匿名对象</param>
         /// <returns>更新成功返回true</returns>
         public bool Update<T>(T rowObj) where T : class
         {
+            var isDynamic = typeof(T).IsAnonymousType();
+            if (isDynamic)
+            {
+                throw new SqlSugarException("Update(T)不支持匿名类型，请使用Update<T,Expression>方法。");
+            }
             var reval = Update<T, object>(rowObj);
+            return reval;
+        }
+
+        /// <summary>
+        /// 批量插入(说明：一次更新超过10条以上建议使用SqlBulkReplace)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="rowObjList">更新实体的集合，rowObj必需包含主键并且不能为匿名对象</param>
+        /// <returns>执行成功将返回bool的集合</returns>
+        public List<bool> UpdateRange<T>(List<T> rowObjList) where T : class
+        {
+            var reval = new List<bool>();
+            if (rowObjList.IsValuable())
+            {
+                foreach (T item in rowObjList)
+                {
+                    reval.Add(Update<T>(item));
+                }
+            }
             return reval;
         }
 
@@ -818,6 +842,123 @@ namespace SqlSugar
             {
                 throw new SqlSugarException(ex.Message, sbSql.ToString(), new { rowObj = rowObj, whereIn = whereIn });
             }
+        }
+
+
+        /// <summary>
+        /// 大数据更新 支持IsIgnoreErrorColumns和isDisableUpdateColumns
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns>全部更新成功返回true</returns>
+        public bool SqlBulkReplace<T>(List<T> entities) where T : class
+        {
+            int actionNum = 100;
+            var reval = true;
+            while (entities.Count > 0)
+            {
+                var insertRes = SqlBulkReplace<T>(entities.Take(actionNum));
+                if (reval && insertRes)
+                {
+                    reval = true;
+                }
+                else
+                {
+                    reval = false;
+                }
+                if (actionNum > entities.Count)
+                {
+                    actionNum = entities.Count;
+                }
+                entities.RemoveRange(0, actionNum);
+            }
+            return reval;
+        }
+
+        private bool SqlBulkReplace<T>(IEnumerable<T> entities) where T : class
+        {
+            if (entities == null) { return false; };
+            StringBuilder sbSql = new StringBuilder("");
+            Type type = typeof(T);
+            string typeName = type.Name;
+            typeName = GetTableNameByClassType(typeName);
+            string pkName = SqlSugarTool.GetPrimaryKeyByTableName(this, typeName);
+            Check.Exception(pkName.IsNullOrEmpty(), "没有找到主键。");
+            var identityNames = SqlSugarTool.GetIdentitiesKeyByTableName(this, typeName);
+            var isIdentity = identityNames != null && identityNames.Count > 0;
+            var columnNames = SqlSugarTool.GetColumnsByTableName(this, typeName);
+            if (isIdentity)
+            {
+                columnNames = columnNames.Where(c => !identityNames.Any(it => it.Value == c)).ToList();//去掉自添列
+            }
+            //属性缓存
+            string cachePropertiesKey = "db." + type.FullName + ".GetProperties";
+            var cachePropertiesManager = CacheManager<PropertyInfo[]>.GetInstance();
+            PropertyInfo[] props = null;
+            if (cachePropertiesManager.ContainsKey(cachePropertiesKey))
+            {
+                props = cachePropertiesManager[cachePropertiesKey];
+            }
+            else
+            {
+                props = type.GetProperties();
+                cachePropertiesManager.Add(cachePropertiesKey, props, cachePropertiesManager.Day);
+            }
+            foreach (var entity in entities)
+            {
+                string pkValue = string.Empty;
+                sbSql.Append(" UPDATE ");
+                sbSql.Append(typeName);
+                sbSql.Append(" SET ");
+                pkValue= props.Single(it => it.Name.ToLower() == pkName.ToLower()).GetValue(entity, null).ToString();
+                foreach (var name in columnNames)
+                {
+                    var isPk = pkName != null && pkName.ToLower() == name.ToLower();
+                    var isDisableUpdateColumns = DisableUpdateColumns != null && DisableUpdateColumns.Any(it => it.ToLower() == name.ToLower());
+                    var isLastName = name == columnNames.Last();
+                    var prop = props.Single(it => it.Name == name);
+                    var objValue = prop.GetValue(entity, null);
+                    if (this.IsIgnoreErrorColumns)
+                    {
+                        if (!SqlSugarTool.GetColumnsByTableName(this, typeName).Any(it => it.ToLower() == name.ToLower()))
+                        {
+                            continue;
+                        }
+                    }
+                    if (isPk || isDisableUpdateColumns)
+                    {
+                        continue;
+                    }
+                    bool isNullable = false;
+                    var underType = SqlSugarTool.GetUnderType(prop, ref isNullable);
+                    if (objValue == null)
+                    {
+                        objValue = "NULL";
+                    }
+                    else if (underType == SqlSugarTool.DateType)
+                    {
+                        objValue = "'" + objValue.ToString() + "'";
+                    }
+                    else if (underType == SqlSugarTool.BoolType)
+                    {
+                        objValue = Convert.ToBoolean(objValue) ? 1 : 0;
+                    }
+                    else if (underType == SqlSugarTool.StringType)
+                    {
+                        //string参数需要处理注入 (因为SqlParameter参数上限为2100所以无法使用参数化)
+                        objValue = "'" + objValue.ToString().ToSqlFilter() + "'";
+                    }
+                    else
+                    {
+                        objValue = "'" + objValue.ToString() + "'";
+                    }     
+                    sbSql.AppendFormat(" [{0}]={1}{2}  ", name, objValue,",");
+                }
+                sbSql.Remove(sbSql.ToString().LastIndexOf(","), 1);
+                sbSql.AppendFormat("WHERE [{0}]='{1}' ", pkName, pkValue.ToSuperSqlFilter());
+            }
+            var reval = base.ExecuteCommand(sbSql.ToString());
+            sbSql = null;
+            return reval > 0;
         }
         #endregion
 
