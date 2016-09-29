@@ -13,8 +13,9 @@ namespace SqlSugar
     /// 修改时间：-
     /// 说明：让.netCore支持DataSet
     /// </summary>
-    public class DataSet{
-    
+    public class DataSet
+    {
+        public List<DataTable> Tables = new List<DataTable>();
     }
 
     /// <summary>
@@ -355,7 +356,36 @@ namespace SqlSugar
 
         internal void Fill(DataSet ds)
         {
-            throw new NotImplementedException("DataSet未实现，敬请期待。");
+            if (ds == null) {
+                ds = new DataSet();
+            }
+            using (SqlDataReader dr = command.ExecuteReader())
+            {
+                do
+                {
+                    var dt = new DataTable();
+                    var columns = dt.Columns;
+                    var rows = dt.Rows;
+                    for (int i = 0; i < dr.FieldCount; i++)
+                    {
+                        string name = dr.GetName(i).Trim();
+                        if (!columns.ContainsKey(name))
+                            columns.Add(new DataColumn(name, dr.GetFieldType(i)));
+                    }
+
+                    while (dr.Read())
+                    {
+                        DataRow daRow = new DataRow();
+                        for (int i = 0; i < columns.Count; i++)
+                        {
+                            if (!daRow.ContainsKey(columns[i].ColumnName))
+                                daRow.Add(columns[i].ColumnName, dr.GetValue(i));
+                        }
+                        dt.Rows.Add(daRow);
+                    }
+                    ds.Tables.Add(dt);
+                } while (dr.NextResult());
+            }
         }
     }
 }

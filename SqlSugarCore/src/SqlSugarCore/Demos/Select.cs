@@ -383,7 +383,9 @@ namespace NewTest.Demos
                 int v2 = db.GetInt("select 1 as name");
                 double v3 = db.GetDouble("select 1 as name");
                 decimal v4 = db.GetDecimal("select 1 as name");
-                //....
+
+                //多个结果集
+                var ds= db.GetDataSetAll("select 1 as id;select 2 as id");
             }
         }
 
