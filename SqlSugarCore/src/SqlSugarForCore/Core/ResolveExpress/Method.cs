@@ -23,8 +23,8 @@ namespace SqlSugar
             MemberType rightType = MemberType.None;
             var left = CreateSqlElements(mce.Object, ref leftType);
             var right = CreateSqlElements(mce.Arguments[0], ref rightType);
-            var oldLeft = AddParas(ref left, right);
-            return string.Format("({0} {1} LIKE @{2}+'%')", oldLeft, null, left);
+            var oldLeft = AddParas(ref left, right + '%');
+            return string.Format("({0} {1} LIKE " + SqlSugarTool.ParSymbol + "{2})", oldLeft, null, left);
         }
 
         /// <summary>
@@ -40,8 +40,8 @@ namespace SqlSugar
             MemberType rightType = MemberType.None;
             var left = CreateSqlElements(mce.Object, ref leftType);
             var right = CreateSqlElements(mce.Arguments[0], ref rightType);
-            var oldLeft = AddParas(ref left, right);
-            return string.Format("({0} {1} LIKE '%'+@{2})", oldLeft, null, left);
+            var oldLeft = AddParas(ref left, '%' + right);
+            return string.Format("({0} {1} LIKE " + SqlSugarTool.ParSymbol + "{2})", oldLeft, null, left);
         }
 
         /// <summary>
@@ -99,8 +99,8 @@ namespace SqlSugar
             }
             else
             {
-                var oldLeft = AddParas(ref left, right);
-                return string.Format("({0} {1} LIKE '%'+@{2}+'%')", oldLeft, null, left);
+                var oldLeft = AddParas(ref left, '%' + right + '%');
+                return string.Format("({0} {1} LIKE " + SqlSugarTool.ParSymbol + "{2})", oldLeft, null, left);
             }
         }
 
@@ -127,11 +127,11 @@ namespace SqlSugar
                 var oldLeft = AddParas(ref left, right);
                 if (isTure)
                 {
-                    return string.Format("(@{0} is null OR @{0}='' )", left);
+                    return string.Format("(" + SqlSugarTool.ParSymbol + "{0} is null OR " + SqlSugarTool.ParSymbol + "{0}='' )", left);
                 }
                 else
                 {
-                    return string.Format("(@{0} is not null AND @{0}<>'' )", left);
+                    return string.Format("(" + SqlSugarTool.ParSymbol + "{0} is not null AND " + SqlSugarTool.ParSymbol + "{0}<>'' )", left);
                 }
             }
             else

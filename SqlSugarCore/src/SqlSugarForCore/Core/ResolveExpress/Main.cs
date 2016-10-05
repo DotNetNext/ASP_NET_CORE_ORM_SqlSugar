@@ -32,6 +32,7 @@ namespace SqlSugar
         public ResolveExpressType Type = ResolveExpressType.oneT;
         public List<SqlParameter> Paras = new List<SqlParameter>();
         private int SameIndex = 1;
+        private SqlSugarClient DB;
 
 
         /// <summary>
@@ -39,8 +40,10 @@ namespace SqlSugar
         /// </summary>
         /// <param name="re">当前解析对象</param>
         /// <param name="exp">要解析的表达式</param>
-        public void ResolveExpression(ResolveExpress re, Expression exp)
+        /// <param name="db">数据库访问对象</param>
+        public void ResolveExpression(ResolveExpress re, Expression exp, SqlSugarClient db)
         {
+            DB = db;
             //初始化表达式
             Init(re, exp);
 
@@ -49,6 +52,7 @@ namespace SqlSugar
             {
                 SqlSugarTool.SetParSize(par);
             }
+
         }
 
         /// <summary>
@@ -139,7 +143,7 @@ namespace SqlSugar
                         parValue = right;
                     }
                     var oldLeft = AddParas(ref left, parValue);
-                    return string.Format(" ({0} {1} @{2}) ", oldLeft, oper, left);
+                    return string.Format(" ({0} {1} "+SqlSugarTool.ParSymbol+"{2}) ", oldLeft, oper, left);
                 }
                 else if (isValueOperKey)
                 {
@@ -153,7 +157,7 @@ namespace SqlSugar
                         parValue = left;
                     }
                     var oldRight = AddParasReturnRight(parValue, ref  right);
-                    return string.Format("( @{0} {1} {2} )", right, oper, oldRight);
+                    return string.Format("( " + SqlSugarTool.ParSymbol + "{0} {1} {2} )", right, oper, oldRight);
                 }
                 else if (leftType == MemberType.Value && rightType == MemberType.Value)
                 {
@@ -255,11 +259,30 @@ namespace SqlSugar
                     if (Type == ResolveExpressType.nT)
                     {
                         type = MemberType.Key;
-                        return exp.ToString();
+                        var dbName= exp.ToString();
+                        if (DB != null &&DB.IsEnableAttributeMapping && DB._mappingColumns.IsValuable())
+                        {
+                            var preName = dbName.Split('.').First();
+                            if (DB._mappingColumns.Any(it => it.Key==dbName.Split('.').Last()))
+                            {
+                                dbName =preName+"."+DB._mappingColumns.Single(it => dbName.EndsWith("."+it.Key)).Value;
+                            }
+
+                        }
+                        return dbName;
                     }
 
                     string name = me.Member.Name;
                     type = MemberType.Key;
+                    if (DB!=null&&DB.IsEnableAttributeMapping && DB._mappingColumns.IsValuable())
+                    {
+                        if (DB._mappingColumns.Any(it => it.Key == name))
+                        {
+                            var dbName = DB._mappingColumns.Single(it => it.Key == name).Value;
+                            return dbName;
+                        }
+
+                    }
                     return name;
                 }
             }
@@ -274,7 +297,7 @@ namespace SqlSugar
                 }
                 return cse;
             }
-            else if (exp!=null&&exp.NodeType.IsIn(ExpressionType.New, ExpressionType.NewArrayBounds, ExpressionType.NewArrayInit))
+            else if (exp != null && exp.NodeType.IsIn(ExpressionType.New, ExpressionType.NewArrayBounds, ExpressionType.NewArrayInit))
             {
                 throw new SqlSugarException("拉姆达表达式内不支持new对象，请提取变量后在赋值，错误信息" + exp.ToString());
             }
@@ -343,11 +366,11 @@ namespace SqlSugar
             }
             if (right == null)
             {
-                this.Paras.Add(new SqlParameter("@" + left, DBNull.Value));
+                this.Paras.Add(new SqlParameter(SqlSugarTool.ParSymbol + left, DBNull.Value));
             }
             else
             {
-                this.Paras.Add(new SqlParameter("@" + left, right));
+                this.Paras.Add(new SqlParameter(SqlSugarTool.ParSymbol + left, right));
             }
             return oldLeft;
         }
@@ -369,11 +392,11 @@ namespace SqlSugar
             }
             if (left == null)
             {
-                this.Paras.Add(new SqlParameter("@" + right, DBNull.Value));
+                this.Paras.Add(new SqlParameter(SqlSugarTool.ParSymbol + right, DBNull.Value));
             }
             else
             {
-                this.Paras.Add(new SqlParameter("@" + right, left));
+                this.Paras.Add(new SqlParameter(SqlSugarTool.ParSymbol + right, left));
             }
             return oldRight;
         }

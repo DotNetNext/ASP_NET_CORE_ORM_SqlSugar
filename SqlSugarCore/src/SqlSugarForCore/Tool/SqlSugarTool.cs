@@ -8,8 +8,6 @@ using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 
-
-
 namespace SqlSugar
 {
     /// <summary>
@@ -19,7 +17,7 @@ namespace SqlSugar
     /// ** 作者：sunkaixuan
     /// ** 使用说明：
     /// </summary>
-    public class SqlSugarTool
+    public partial class SqlSugarTool
     {
         internal static Type StringType = typeof(string);
         internal static Type IntType = typeof(int);
@@ -40,11 +38,14 @@ namespace SqlSugar
         internal static Type DicArraySO = typeof(Dictionary<string, object>);
 
         /// <summary>
-        /// Reader转成T的集合
+        ///  Reader转成T的集合
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <param name="dr"></param>
+        /// <param name="fields"></param>
         /// <param name="isClose"></param>
+        /// <param name="isTry"></param>
         /// <returns></returns>
         internal static List<T> DataReaderToList<T>(Type type, IDataReader dr, string fields, bool isClose = true, bool isTry = true)
         {
@@ -55,7 +56,7 @@ namespace SqlSugar
                 return strReval;
             }
             //值类型
-            else if (type.GetTypeInfo().IsValueType || type == SqlSugarTool.StringType)
+            else if (type.IsValueType() || type == SqlSugarTool.StringType)
             {
                 List<T> strReval = new List<T>();
                 FillValueTypeToDr<T>(type, dr, strReval);
@@ -95,7 +96,7 @@ namespace SqlSugar
             catch (Exception ex)
             {
                 if (isClose) { dr.Close(); dr.Dispose(); dr = null; }
-                Check.Exception(true,"错误信息：实体映射出错。\r\n错误详情：{0}",ex.Message);
+                Check.Exception(true, "错误信息：实体映射出错。\r\n错误详情：{0}", ex.Message);
             }
             return list;
         }
@@ -110,77 +111,12 @@ namespace SqlSugar
                 }
             }
         }
-        private static void FillValueTypeToDictionary<T>(Type type, IDataReader dr, List<T> strReval)
-        {
-            using (IDataReader re = dr)
-            {
-                Dictionary<string, string> reval = new Dictionary<string, string>();
-                while (re.Read())
-                {
-                    if (SqlSugarTool.DicOO == type)
-                    {
-                        var kv = new KeyValuePair<object, object>(dr.GetValue(0), re.GetValue(1));
-                        strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<object, object>)));
-                    }
-                    else if (SqlSugarTool.Dicii == type)
-                    {
-                        var kv = new KeyValuePair<int, int>(dr.GetValue(0).TryToInt(), re.GetValue(1).TryToInt());
-                        strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<int, int>)));
-                    }
-                    else if (SqlSugarTool.DicSi == type)
-                    {
-                        var kv = new KeyValuePair<string, int>(dr.GetValue(0).TryToString(), re.GetValue(1).TryToInt());
-                        strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, int>)));
-                    }
-                    else if (SqlSugarTool.DicSo == type)
-                    {
-                        var kv = new KeyValuePair<string, object>(dr.GetValue(0).TryToString(), re.GetValue(1));
-                        strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, object>)));
-                    }
-                    else if (SqlSugarTool.DicSS == type)
-                    {
-                        var kv = new KeyValuePair<string, string>(dr.GetValue(0).TryToString(), dr.GetValue(1).TryToString());
-                        strReval.Add((T)Convert.ChangeType(kv, typeof(KeyValuePair<string, string>)));
-                    }
-                    else
-                    {
-                        Check.Exception(true, "暂时不支持该类型的Dictionary 你可以试试 Dictionary<string ,string>或者联系作者！！");
-                    }
-                }
-            }
-        }
-        private static void FillValueTypeToArray<T>(Type type, IDataReader dr, List<T> strReval)
-        {
-            using (IDataReader re = dr)
-            {
-                int count = dr.FieldCount;
-                var childType = type.GetElementType();
-                while (re.Read())
-                {
-                    object[] array = new object[count];
 
-                    if (childType == SqlSugarTool.StringType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToString()).ToArray(), type));
-                    else if (childType == SqlSugarTool.ObjType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it).ToArray(), type));
-                    else if (childType == SqlSugarTool.BoolType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToBoolean()).ToArray(), type));
-                    else if (childType == SqlSugarTool.ByteType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => (byte)it).ToArray(), type));
-                    else if (childType == SqlSugarTool.DecType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToDecimal()).ToArray(), type));
-                    else if (childType == SqlSugarTool.GuidType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToGuid()).ToArray(), type));
-                    else if (childType == SqlSugarTool.DateType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToDate()).ToArray(), type));
-                    else if (childType == SqlSugarTool.IntType)
-                        strReval.Add((T)Convert.ChangeType(array.Select(it => it.TryToInt()).ToArray(), type));
-                    else
-                        Check.Exception(true, "暂时不支持该类型的Array 你可以试试 object[] 或者联系作者！！");
-                }
-            }
-        }
 
+        /// <summary>
+        /// 设置参数Size
+        /// </summary>
+        /// <param name="par"></param>
         public static void SetParSize(SqlParameter par)
         {
             int size = par.Size;
@@ -207,14 +143,15 @@ namespace SqlSugar
                     if (type == SqlSugarTool.DicArraySO)
                     {
                         var newObj = (Dictionary<string, object>)obj;
-                        var pars = newObj.Select(it=>new SqlParameter("@"+it.Key,it.Value));
+                        var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
                         foreach (var par in pars)
                         {
                             SetParSize(par);
                         }
                         listParams.AddRange(pars);
                     }
-                    else {
+                    else
+                    {
 
                         var newObj = (Dictionary<string, string>)obj;
                         var pars = newObj.Select(it => new SqlParameter("@" + it.Key, it.Value));
@@ -336,123 +273,6 @@ namespace SqlSugar
             return GetPrimaryKeyByTableName(db, tableName) != null;
         }
 
-        /// <summary>
-        ///根据表名获取自添列 keyTableName Value columnName
-        /// </summary>
-        /// <param name="db"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
-        internal static List<KeyValue> GetIdentitiesKeyByTableName(SqlSugarClient db, string tableName)
-        {
-            string key = "GetIdentityKeyByTableName" + tableName;
-            var cm = CacheManager<List<KeyValue>>.GetInstance();
-            List<KeyValue> identityInfo = null;
-            string sql = string.Format(@"
-                            declare @Table_name varchar(60)
-                            set @Table_name = '{0}';
-
-
-                            Select so.name tableName,                   --表名字
-                                   sc.name keyName,             --自增字段名字
-                                   ident_current(so.name) curr_value,    --自增字段当前值
-                                   ident_incr(so.name) incr_value,       --自增字段增长值
-                                   ident_seed(so.name) seed_value        --自增字段种子值
-                              from sysobjects so 
-                            Inner Join syscolumns sc
-                                on so.id = sc.id
-
-                                   and columnproperty(sc.id, sc.name, 'IsIdentity') = 1
-
-                            Where upper(so.name) = upper(@Table_name)
-         ", tableName);
-            if (cm.ContainsKey(key))
-            {
-                identityInfo = cm[key];
-                return identityInfo;
-            }
-            else
-            {
-                var dt = db.GetDataTable(sql);
-                identityInfo = new List<KeyValue>();
-                if (dt != null && dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        identityInfo.Add(new KeyValue() { Key = dr["tableName"].ToString().ToLower(), Value = dr["keyName"].ToString() });
-                    }
-                }
-                cm.Add(key, identityInfo, cm.Day);
-                return identityInfo;
-            }
-        }
-        /// <summary>
-        /// 根据表名获取列名
-        /// </summary>
-        /// <param name="db"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
-        internal static List<string> GetColumnsByTableName(SqlSugarClient db, string tableName)
-        {
-            string key = "GetColumnNamesByTableName" + tableName;
-            var cm = CacheManager<List<string>>.GetInstance();
-            if (cm.ContainsKey(key))
-            {
-                return cm[key];
-            }
-            else
-            {
-                string sql = " SELECT Name FROM SysColumns WHERE id=Object_Id('" + tableName + "')";
-                var reval = db.SqlQuery<string>(sql);
-                cm.Add(key, reval, cm.Day);
-                return reval;
-            }
-        }
-
-        /// <summary>
-        /// 根据表获取主键
-        /// </summary>
-        /// <param name="db"></param>
-        /// <param name="tableName"></param>
-        /// <returns></returns>
-        internal static string GetPrimaryKeyByTableName(SqlSugarClient db, string tableName)
-        {
-            string key = "GetPrimaryKeyByTableName" + tableName;
-            tableName = tableName.ToLower();
-            var cm = CacheManager<List<KeyValue>>.GetInstance();
-            List<KeyValue> primaryInfo = null;
-
-            //获取主键信息
-            if (cm.ContainsKey(key))
-                primaryInfo = cm[key];
-            else
-            {
-                string sql = @"  				SELECT a.name as keyName ,d.name as tableName
-  FROM   syscolumns a 
-  inner  join sysobjects d on a.id=d.id       
-  where  exists(SELECT 1 FROM sysobjects where xtype='PK' and  parent_obj=a.id and name in (  
-  SELECT name  FROM sysindexes   WHERE indid in(  
-  SELECT indid FROM sysindexkeys WHERE id = a.id AND colid=a.colid  
-)))";
-                var dt = db.GetDataTable(sql);
-                primaryInfo = new List<KeyValue>();
-                if (dt != null && dt.Rows.Count > 0)
-                {
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        primaryInfo.Add(new KeyValue() { Key = dr["tableName"].ToString().ToLower(), Value = dr["keyName"].ToString() });
-                    }
-                }
-                cm.Add(key, primaryInfo, cm.Day);
-            }
-
-            //反回主键
-            if (!primaryInfo.Any(it => it.Key == tableName))
-            {
-                return null;
-            }
-            return primaryInfo.First(it => it.Key == tableName).Value;
-
-        }
 
         /// <summary>
         /// 处理like条件的通配符
@@ -463,11 +283,6 @@ namespace SqlSugar
         {
             if (word == null) return word;
             return Regex.Replace(word, @"(\[|\%)", "[$1]");
-        }
-
-        public static string GetLockString(bool isNoLock)
-        {
-            return isNoLock ? " WITH(NOLOCK) " : "";
         }
 
         /// <summary>
@@ -481,143 +296,12 @@ namespace SqlSugar
             PropertyInfo propertyInfo = obj.GetType().GetProperty(property);
             return (Guid)propertyInfo.GetValue(obj, null);
         }
-        /// <summary>
-        /// 包装SQL
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="shortName"></param>
-        /// <returns></returns>
-        internal static string PackagingSQL(string sql, string shortName)
-        {
-            return string.Format(" SELECT * FROM ({0}) {1} ", sql, shortName);
-        }
-
+  
         /// <summary>
         /// 使用页面自动填充sqlParameter时 Request.Form出现特殊字符时可以重写Request.Form方法，使用时注意加锁并且用到将该值设为null
         /// </summary>
         public static Func<string, string> SpecialRequestForm = null;
 
-        /// <summary>
-        /// 获取参数到键值集合根据页面Request参数
-        /// </summary>
-        /// <returns></returns>
-        public static Dictionary<string, string> GetParameterDictionary(bool isNotNullAndEmpty = false)
-        {
-            throw new SqlSugarException("Core不支持该函数");
-        }
-
-        internal static void GetSqlableSql(Sqlable sqlable, string fileds, string orderByFiled, int pageIndex, int pageSize, StringBuilder sbSql)
-        {
-            if (sqlable.DB.PageModel == PageModel.RowNumber)
-            {
-                sbSql.Insert(0, string.Format("SELECT {0},row_index=ROW_NUMBER() OVER(ORDER BY {1} )", fileds, orderByFiled));
-                sbSql.Append(" WHERE 1=1 ").Append(string.Join(" ", sqlable.Where));
-                sbSql.Append(sqlable.OrderBy);
-                sbSql.Append(sqlable.GroupBy);
-                int skip = (pageIndex - 1) * pageSize + 1;
-                int take = pageSize;
-                sbSql.Insert(0, "SELECT * FROM ( ");
-                sbSql.AppendFormat(") t WHERE  t.row_index BETWEEN {0}  AND {1}   ", skip, skip + take - 1);
-            }
-            else
-            {
-                sbSql.Insert(0, string.Format("SELECT {0}", fileds));
-                sbSql.Append(" WHERE 1=1 ").Append(string.Join(" ", sqlable.Where));
-                sbSql.Append(sqlable.GroupBy);
-                sbSql.AppendFormat(" ORDER BY {0} ", orderByFiled);
-                int skip = (pageIndex - 1) * pageSize;
-                int take = pageSize;
-                sbSql.AppendFormat("OFFSET {0} ROW FETCH NEXT {1} ROWS ONLY", skip, take);
-            }
-        }
-        /// <summary>
-        /// 获取参数到键值集合根据页面Request参数
-        /// </summary>
-        /// <returns></returns>
-        public static SqlParameter[] GetParameterArray(bool isNotNullAndEmpty = false)
-        {
-            throw new SqlSugarException("Core不支持该函数");
-        }
-
-        internal static StringBuilder GetQueryableSql<T>(SqlSugar.Queryable<T> queryable)
-        {
-            string joinInfo = string.Join(" ", queryable.JoinTableValue);
-            StringBuilder sbSql = new StringBuilder();
-            string tableName = queryable.TableName.IsNullOrEmpty() ? queryable.TName : queryable.TableName;
-            if (queryable.DB.Language.IsValuable() && queryable.DB.Language.Suffix.IsValuable())
-            {
-                var viewNameList = LanguageHelper.GetLanguageViewNameList(queryable.DB);
-                var isLanView = viewNameList.IsValuable() && viewNameList.Any(it => it == tableName);
-                if (!queryable.DB.Language.Suffix.StartsWith(LanguageHelper.PreSuffix))
-                {
-                    queryable.DB.Language.Suffix = LanguageHelper.PreSuffix + queryable.DB.Language.Suffix;
-                }
-
-                //将视图变更为多语言的视图
-                if (isLanView)
-                    tableName = typeof(T).Name + queryable.DB.Language.Suffix;
-            }
-            if (queryable.DB.PageModel == PageModel.RowNumber)
-            {
-                #region  rowNumber
-                string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-                var order = queryable.OrderByValue.IsValuable() ? (",row_index=ROW_NUMBER() OVER(ORDER BY " + queryable.OrderByValue + " )") : null;
-
-                sbSql.AppendFormat("SELECT " + queryable.SelectValue.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, order, withNoLock, string.Join("", queryable.WhereValue), queryable.GroupByValue.GetGroupBy(), joinInfo);
-                if (queryable.Skip == null && queryable.Take != null)
-                {
-                    if (joinInfo.IsValuable())
-                    {
-                        sbSql.Insert(0, "SELECT * FROM ( ");
-                    }
-                    else
-                    {
-                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
-                    }
-                    sbSql.Append(") t WHERE t.row_index<=" + queryable.Take);
-                }
-                else if (queryable.Skip != null && queryable.Take == null)
-                {
-                    if (joinInfo.IsValuable())
-                    {
-                        sbSql.Insert(0, "SELECT * FROM ( ");
-                    }
-                    else
-                    {
-                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
-                    }
-                    sbSql.Append(") t WHERE t.row_index>" + (queryable.Skip));
-                }
-                else if (queryable.Skip != null && queryable.Take != null)
-                {
-                    if (joinInfo.IsValuable())
-                    {
-                        sbSql.Insert(0, "SELECT * FROM ( ");
-                    }
-                    else
-                    {
-                        sbSql.Insert(0, "SELECT " + queryable.SelectValue.GetSelectFiles() + " FROM ( ");
-                    }
-                    sbSql.Append(") t WHERE t.row_index BETWEEN " + (queryable.Skip + 1) + " AND " + (queryable.Skip + queryable.Take));
-                }
-                #endregion
-            }
-            else
-            {
-
-                #region offset
-                string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-                var order = queryable.OrderByValue.IsValuable() ? ("ORDER BY " + queryable.OrderByValue + " ") : null;
-                sbSql.AppendFormat("SELECT " + queryable.SelectValue.GetSelectFiles() + " {1} FROM [{0}] {5} {2} WHERE 1=1 {3} {4} ", tableName, "", withNoLock, string.Join("", queryable.WhereValue), queryable.GroupByValue.GetGroupBy(), joinInfo);
-                sbSql.Append(order);
-                if (queryable.Skip != null || queryable.Take != null)
-                {
-                    sbSql.AppendFormat("OFFSET {0} ROW FETCH NEXT {1} ROWS ONLY", Convert.ToInt32(queryable.Skip), Convert.ToInt32(queryable.Take));
-                }
-                #endregion
-            }
-            return sbSql;
-        }
 
         /// <summary>
         /// 获取最底层类型

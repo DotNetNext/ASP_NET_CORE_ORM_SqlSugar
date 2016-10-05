@@ -34,7 +34,7 @@ namespace SqlSugar
             {
                 re.Type = ResolveExpressType.nT;
             }
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.Params.AddRange(re.Paras);
             queryable.WhereValue.Add(re.SqlWhere);
             return queryable;
@@ -72,7 +72,7 @@ namespace SqlSugar
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
             re.Type = ResolveExpressType.nT;
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.Params.AddRange(re.Paras);
             queryable.WhereValue.Add(re.SqlWhere);
             return queryable;
@@ -93,7 +93,7 @@ namespace SqlSugar
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
             re.Type = ResolveExpressType.nT;
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.Params.AddRange(re.Paras);
             queryable.WhereValue.Add(re.SqlWhere);
             return queryable;
@@ -115,7 +115,7 @@ namespace SqlSugar
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
             re.Type = ResolveExpressType.nT;
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.Params.AddRange(re.Paras);
             queryable.WhereValue.Add(re.SqlWhere);
             return queryable;
@@ -138,7 +138,7 @@ namespace SqlSugar
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
             re.Type = ResolveExpressType.nT;
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.Params.AddRange(re.Paras);
             queryable.WhereValue.Add(re.SqlWhere);
             return queryable;
@@ -176,7 +176,7 @@ namespace SqlSugar
         {
 
             ResolveExpress re = new ResolveExpress();
-            var InFieldName = re.GetExpressionRightField(expression);
+            var InFieldName = re.GetExpressionRightField(expression,queryable.DB);
             return In<T, FieldType>(queryable, InFieldName, inValues);
         }
 
@@ -193,7 +193,7 @@ namespace SqlSugar
         {
 
             ResolveExpress re = new ResolveExpress();
-            var InFieldName = re.GetExpressionRightField(expression);
+            var InFieldName = re.GetExpressionRightField(expression,queryable.DB);
             return In<T, FieldType>(queryable, InFieldName, inValues);
         }
 
@@ -237,10 +237,10 @@ namespace SqlSugar
         public static Queryable<T> OrderBy<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression, OrderByType type = OrderByType.asc)
         {
             ResolveExpress re = new ResolveExpress();
-            var field = re.GetExpressionRightField(expression);
+            var field = re.GetExpressionRightField(expression,queryable.DB);
             if (queryable.JoinTableValue.IsValuable())
             {
-                field = re.GetExpressionRightFieldByNT(expression);
+                field = re.GetExpressionRightFieldByNT(expression,queryable.DB);
             }
             var pre = queryable.OrderByValue.IsValuable() ? "," : "";
             queryable.OrderByValue += pre + field + " " + type.ToString().ToUpper();
@@ -259,7 +259,7 @@ namespace SqlSugar
         public static Queryable<T> OrderBy<T, T2>(this Queryable<T> queryable, Expression<Func<T, T2, object>> expression, OrderByType type = OrderByType.asc)
         {
             ResolveExpress re = new ResolveExpress();
-            var field = re.GetExpressionRightFieldByNT(expression);
+            var field = re.GetExpressionRightFieldByNT(expression,queryable.DB);
             var pre = queryable.OrderByValue.IsValuable() ? "," : "";
             queryable.OrderByValue += pre + field + " " + type.ToString().ToUpper();
             return queryable;
@@ -276,7 +276,7 @@ namespace SqlSugar
         public static Queryable<T> GroupBy<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression)
         {
             ResolveExpress re = new ResolveExpress();
-            var field = re.GetExpressionRightField(expression);
+            var field = re.GetExpressionRightField(expression,queryable.DB);
             var pre = queryable.GroupByValue.IsValuable() ? "," : "";
             queryable.GroupByValue += pre + field;
             return queryable;
@@ -382,7 +382,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.WhereValue.Add(re.SqlWhere);
             queryable.Params.AddRange(re.Paras);
             return queryable.ToList().Single();
@@ -400,7 +400,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.WhereValue.Add(re.SqlWhere);
             queryable.Params.AddRange(re.Paras);
             return queryable.ToList().SingleOrDefault();
@@ -459,7 +459,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.WhereValue.Add(re.SqlWhere);
             queryable.Params.AddRange(re.Paras);
             return First<T>(queryable);
@@ -478,7 +478,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.WhereValue.Add(re.SqlWhere);
             queryable.Params.AddRange(re.Paras);
             return FirstOrDefault<T>(queryable);
@@ -497,7 +497,7 @@ namespace SqlSugar
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
             ResolveExpress re = new ResolveExpress(queryable.WhereIndex);
-            re.ResolveExpression(re, expression);
+            re.ResolveExpression(re, expression,queryable.DB);
             queryable.WhereValue.Add(re.SqlWhere);
             queryable.Params.AddRange(re.Paras);
             return queryable.Count() > 0;
@@ -535,7 +535,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
@@ -565,7 +565,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
@@ -596,7 +596,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
@@ -628,7 +628,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
@@ -656,7 +656,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
@@ -693,7 +693,7 @@ namespace SqlSugar
                 Skip = queryable.Skip,
                 Take = queryable.Take,
                 WhereValue = queryable.WhereValue,
-                TableName = type.Name,
+                TableName = queryable.TableName,
                 GroupByValue = queryable.GroupByValue,
                 SelectValue = select
             };
@@ -716,7 +716,14 @@ namespace SqlSugar
             queryable.SelectValue = select;
             return queryable;
         }
-
+        /// <summary>
+        /// 将select的字段映射到T对象
+        /// </summary>
+        /// <typeparam name="T">数据实体类型</typeparam>
+        /// <typeparam name="Result">数据实体类型</typeparam>
+        /// <param name="queryable">查询对象</param>
+        /// <param name="select">查询字符串（例如 id,name）</param>
+        /// <returns></returns>
         public static Queryable<Result> Select<T, Result>(this Queryable<Result> queryable, string select)
         {
             queryable.SelectValue = select;
@@ -738,7 +745,7 @@ namespace SqlSugar
             {
                 tableName = queryable.TableName;
             }
-            sbSql.AppendFormat("SELECT COUNT({3})  FROM [{0}] {1} " + joinInfo + " WHERE 1=1 {2} {4} ", tableName, withNoLock, string.Join("", queryable.WhereValue), "1", queryable.GroupByValue.GetGroupBy());
+            sbSql.AppendFormat("SELECT COUNT({3})  FROM {0} {1} " + joinInfo + " WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), "1", queryable.GroupByValue.GetGroupBy());
             var count = queryable.DB.GetInt(sbSql.ToString(), queryable.Params.ToArray());
             return count;
         }
@@ -756,7 +763,12 @@ namespace SqlSugar
         {
             StringBuilder sbSql = new StringBuilder();
             string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-            sbSql.AppendFormat("SELECT MAX({3})  FROM [{0}] {1} WHERE 1=1 {2} {4} ", queryable.TName, withNoLock, string.Join("", queryable.WhereValue), maxField, queryable.GroupByValue.GetGroupBy());
+            var tableName = queryable.TName;
+            if (queryable.TableName.IsValuable())
+            {
+                tableName = queryable.TableName;
+            }
+            sbSql.AppendFormat("SELECT MAX({3})  FROM {0} {1} WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), maxField, queryable.GroupByValue.GetGroupBy());
             var objValue = queryable.DB.GetScalar(sbSql.ToString(), queryable.Params.ToArray());
             var reval = Convert.ChangeType(objValue, typeof(TResult));
             return (TResult)reval;
@@ -773,7 +785,7 @@ namespace SqlSugar
         {
 
             ResolveExpress re = new ResolveExpress();
-            var minField = re.GetExpressionRightField(expression);
+            var minField = re.GetExpressionRightField(expression,queryable.DB);
             return Max<T, object>(queryable, minField);
         }
 
@@ -789,7 +801,12 @@ namespace SqlSugar
         {
             StringBuilder sbSql = new StringBuilder();
             string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-            sbSql.AppendFormat("SELECT MIN({3})  FROM [{0}] {1} WHERE 1=1 {2} {4} ", queryable.TName, withNoLock, string.Join("", queryable.WhereValue), minField, queryable.GroupByValue.GetGroupBy());
+            var tableName = queryable.TName;
+            if (queryable.TableName.IsValuable())
+            {
+                tableName = queryable.TableName;
+            }
+            sbSql.AppendFormat("SELECT MIN({3})  FROM {0} {1} WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), minField, queryable.GroupByValue.GetGroupBy());
             var objValue = queryable.DB.GetScalar(sbSql.ToString(), queryable.Params.ToArray());
             var reval = Convert.ChangeType(objValue, typeof(TResult));
             return (TResult)reval;
@@ -805,7 +822,7 @@ namespace SqlSugar
         public static object Min<T>(this Queryable<T> queryable, Expression<Func<T, object>> expression)
         {
             ResolveExpress re = new ResolveExpress();
-            var minField = re.GetExpressionRightField(expression);
+            var minField = re.GetExpressionRightField(expression,queryable.DB);
             return Min<T, object>(queryable, minField);
         }
 
@@ -910,6 +927,7 @@ namespace SqlSugar
         /// <returns>Queryable</returns>
         public static Queryable<T> JoinTable<T, T2>(this Queryable<T> queryable, Expression<Func<T, T2, object>> expression, JoinType type = JoinType.LEFT)
         {
+            queryable.DB.InitAttributes<T2>();
 
             ResolveExpress re = new ResolveExpress();
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -918,11 +936,28 @@ namespace SqlSugar
             var exLeftArray = exLeftStr.Split(',');
             var shortName1 = exLeftArray.First();
             var shortName2 = exLeftArray.Last();
-            re.ResolveExpression(re, expression);
-            string joinTableName = type.ToString();
+            re.ResolveExpression(re, expression,queryable.DB);
+            string joinTypeName = type.ToString();
+            string joinTableName = null;
+            if (queryable.DB._mappingTableList.IsValuable())
+            {
+                //别名表
+                if (queryable.DB._mappingTableList.IsValuable())
+                {
+                    string name = typeof(T2).Name;
+                    if (queryable.DB._mappingTableList.Any(it => it.Key == name))
+                    {
+                        joinTableName = queryable.DB._mappingTableList.First(it => it.Key == name).Value;
+                    }
+                }
+            }
+            if(joinTableName.IsNullOrEmpty())
+            {
+               joinTableName=typeof(T2).Name;
+            }
             string joinStr = string.Format(" {0} JOIN {1} {2} ON {3}  ",
-                /*0*/queryable.JoinTableValue.Count == 0 ? (" " + shortName1 + " " + joinTableName) : joinTableName.ToString(),
-                /*1*/typeof(T2).Name,
+                /*0*/queryable.JoinTableValue.Count == 0 ? (" " + shortName1 + " " + joinTypeName) : joinTypeName.ToString(),
+                /*1*/joinTableName.GetTranslationSqlName(),
                 /*2*/shortName2,
                 /*3*/re.SqlWhere.Trim().TrimStart('A').TrimStart('N').TrimStart('D')
                 );
@@ -937,12 +972,14 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T">第一个表的对象</typeparam>
         /// <typeparam name="T2">联接表的对象</typeparam>
+        /// <typeparam name="T3">联接表的对象</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">条件表达式</param>
         /// <param name="type">Join的类型</param>
         /// <returns>Queryable</returns>
         public static Queryable<T> JoinTable<T, T2, T3>(this Queryable<T> queryable, Expression<Func<T, T2, T3, object>> expression, JoinType type = JoinType.LEFT)
         {
+            queryable.DB.InitAttributes<T3>();
 
             ResolveExpress re = new ResolveExpress();
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -951,11 +988,28 @@ namespace SqlSugar
             var exLeftArray = exLeftStr.Split(',');
             var shortName1 = exLeftArray[1];
             var shortName2 = exLeftArray[2];
-            re.ResolveExpression(re, expression);
-            string joinTableName = type.ToString();
+            re.ResolveExpression(re, expression,queryable.DB);
+            string joinTypeName = type.ToString();
+            string joinTableName = null;
+            if (queryable.DB._mappingTableList.IsValuable())
+            {
+                //别名表
+                if (queryable.DB._mappingTableList.IsValuable())
+                {
+                    string name = typeof(T3).Name;
+                    if (queryable.DB._mappingTableList.Any(it => it.Key == name))
+                    {
+                        joinTableName = queryable.DB._mappingTableList.First(it => it.Key == name).Value;
+                    }
+                }
+            }
+            if(joinTableName.IsNullOrEmpty())
+            {
+                joinTableName = typeof(T3).Name;
+            }
             string joinStr = string.Format(" {0} JOIN {1} {2} ON {3}  ",
-                /*0*/queryable.JoinTableValue.Count == 0 ? (" " + shortName1 + " " + joinTableName) : joinTableName.ToString(),
-                /*1*/typeof(T3).Name,
+                /*0*/queryable.JoinTableValue.Count == 0 ? (" " + shortName1 + " " + joinTypeName) : joinTypeName.ToString(),
+                /*1*/joinTableName.GetTranslationSqlName(),
                 /*2*/shortName2,
                 /*3*/re.SqlWhere.Trim().TrimStart('A').TrimStart('N').TrimStart('D')
                 );
@@ -976,7 +1030,6 @@ namespace SqlSugar
         /// <returns>Queryable</returns>
         public static Queryable<T> JoinTable<T>(this Queryable<T> queryable, string tableName, string shortName, string onWhere, object whereObj, JoinType type = JoinType.LEFT)
         {
-
             queryable.WhereIndex = queryable.WhereIndex + 100; ;
             string joinType = type.ToString();
             string joinStr = string.Format(" {0} JOIN {1} {2} ON {3}  ",

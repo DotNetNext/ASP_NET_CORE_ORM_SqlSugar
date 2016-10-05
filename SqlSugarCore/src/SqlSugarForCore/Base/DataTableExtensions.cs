@@ -48,13 +48,13 @@ namespace SqlSugar
         {
             this.ColumnName = columnName;
         }
-        public DataColumn(string columnName, object dataType)
+        public DataColumn(string columnName, Type dataType)
         {
             this.ColumnName = columnName;
             this.DataType = dataType;
         }
         public string ColumnName { get; internal set; }
-        public object DataType { get; internal set; }
+        public Type DataType { get; internal set; }
     }
     /// <summary>
     /// 数据列集合

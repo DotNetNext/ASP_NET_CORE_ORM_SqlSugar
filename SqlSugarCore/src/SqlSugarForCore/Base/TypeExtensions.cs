@@ -56,5 +56,10 @@ namespace SqlSugar
             var reval = type.GetTypeInfo().GetConstructor(types);
             return reval;
         }
+
+        public static bool IsValueType(this Type type)
+        {
+            return type.GetTypeInfo().IsValueType;
+        }
     }
 }

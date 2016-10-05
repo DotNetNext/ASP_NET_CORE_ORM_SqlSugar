@@ -6,6 +6,9 @@ using System.Text;
 namespace SqlSugar
 {
  
+    /// <summary>
+    /// 生成实体格式模版
+    /// </summary>
     public class ClassTemplate
     {
         /// <summary>
@@ -17,7 +20,7 @@ namespace SqlSugar
         /// <param name="classNameStr"></param>
         /// <param name="primaryKeyName"></param>
         /// <returns></returns>
-        public static string Replace(string templateStr, string nameSpaceStr, string foreachStr, string classNameStr, List<string> primaryKeyName = null)
+        internal static string Replace(string templateStr, string nameSpaceStr, string foreachStr, string classNameStr, List<string> primaryKeyName = null)
         {
             if (nameSpaceStr.IsNullOrEmpty())
             {
@@ -38,6 +41,7 @@ namespace SqlSugar
             }
             return templateStr;
         }
+
         /// <summary>
         /// 字段模版
         /// </summary>
@@ -58,6 +62,15 @@ namespace $namespace
         $foreach
     }
 }
+";
+        /// <summary>
+        /// 生成实体类字段摘要模版
+        /// </summary>
+        public static string ClassFieldSummaryTemplate = @"     /// <summary>
+     /// Desc:{0} 
+     /// Default:{1} 
+     /// Nullable:{2} 
+     /// </summary>
 ";
     }
 }

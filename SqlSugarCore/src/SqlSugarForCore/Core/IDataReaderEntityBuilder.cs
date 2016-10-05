@@ -87,8 +87,6 @@ namespace SqlSugar
         /// <returns></returns>
         public static IDataReaderEntityBuilder<T> CreateBuilder(Type type, IDataRecord dataRecord)
         {
-
-            {
                 IDataReaderEntityBuilder<T> dynamicBuilder = new IDataReaderEntityBuilder<T>();
                 DynamicMethod method = new DynamicMethod("DynamicCreateEntity", type,
                         new Type[] { typeof(IDataRecord) }, type, true);
@@ -96,10 +94,21 @@ namespace SqlSugar
                 LocalBuilder result = generator.DeclareLocal(type);
                 generator.Emit(OpCodes.Newobj, type.GetConstructor(Type.EmptyTypes));
                 generator.Emit(OpCodes.Stloc, result);
+                string cacheKey = "SqlSugarClient.InitAttributes";
+                var cm = CacheManager<List<KeyValue>>.GetInstance();
+                var tFieldNames = typeof(T).GetProperties().Select(it => it.Name).ToList();
                 for (int i = 0; i < dataRecord.FieldCount; i++)
                 {
-                    string fieldName = dataRecord.GetName(i);
-                    PropertyInfo propertyInfo = type.GetProperty(fieldName);
+                    string dbFieldName = dataRecord.GetName(i);
+                    if (cm.ContainsKey(cacheKey) && cm[cacheKey].Any(it => it.Value == dbFieldName))
+                    {
+                        var classFieldName= cm[cacheKey].Single(it => it.Value == dbFieldName).Key;
+                        if (tFieldNames.Any(it => it == classFieldName))//T包含映射属性
+                        {
+                            dbFieldName = classFieldName;
+                        }
+                    }
+                    PropertyInfo propertyInfo = type.GetProperty(dbFieldName);
                     Label endIfLabel = generator.DefineLabel();
                     if (propertyInfo != null && propertyInfo.GetSetMethod() != null)
                     {
@@ -113,7 +122,7 @@ namespace SqlSugar
                         generator.Emit(OpCodes.Ldloc, result);
                         generator.Emit(OpCodes.Ldarg_0);
                         generator.Emit(OpCodes.Ldc_I4, i);
-                        GeneratorCallMethod(generator, underType, isNullable, propertyInfo, dataRecord.GetDataTypeName(i), fieldName);
+                        GeneratorCallMethod(generator, underType, isNullable, propertyInfo, dataRecord.GetDataTypeName(i), dbFieldName);
                         generator.Emit(OpCodes.Callvirt, propertyInfo.GetSetMethod());
                         generator.MarkLabel(endIfLabel);
                     }
@@ -122,7 +131,6 @@ namespace SqlSugar
                 generator.Emit(OpCodes.Ret);
                 dynamicBuilder.handler = (Load)method.CreateDelegate(typeof(Load));
                 return dynamicBuilder;
-            }
         }
 
 
@@ -152,7 +160,7 @@ namespace SqlSugar
             List<string> shortThrow = new List<string>() { "datetime", "guid" };
             List<string> byteThrow = new List<string>() { "datetime", "guid" };
             MethodInfo method = null;
-            var typeName = ChangeDBTypeToCSharpType(dbTypeName);
+            var typeName = SqlSugarTool.ChangeDBTypeToCSharpType(dbTypeName);
             var objTypeName = type.Name.ToLower();
             var isEnum = type.IsEnum();
             if (isEnum)
@@ -336,97 +344,6 @@ namespace SqlSugar
 
 
         }
-        /// <summary>
-        /// 将SqlType转成C#Type
-        /// </summary>
-        /// <param name="typeName"></param>
-        /// <returns></returns>
-        public static string ChangeDBTypeToCSharpType(string typeName)
-        {
-            string reval = string.Empty;
-            switch (typeName.ToLower())
-            {
-                case "int":
-                    reval = "int";
-                    break;
-                case "text":
-                    reval = "string";
-                    break;
-                case "bigint":
-                    reval = "long";
-                    break;
-                case "binary":
-                    reval = "object";
-                    break;
-                case "bit":
-                    reval = "bool";
-                    break;
-                case "char":
-                    reval = "string";
-                    break;
-                case "datetime":
-                    reval = "dateTime";
-                    break;
-                case "decimal":
-                    reval = "decimal";
-                    break;
-                case "float":
-                    reval = "double";
-                    break;
-                case "image":
-                    reval = "byte[]";
-                    break;
-                case "money":
-                    reval = "decimal";
-                    break;
-                case "nchar":
-                    reval = "string";
-                    break;
-                case "ntext":
-                    reval = "string";
-                    break;
-                case "numeric":
-                    reval = "decimal";
-                    break;
-                case "nvarchar":
-                    reval = "string";
-                    break;
-                case "real":
-                    reval = "float";
-                    break;
-                case "smalldatetime":
-                    reval = "dateTime";
-                    break;
-                case "smallint":
-                    reval = "short";
-                    break;
-                case "smallmoney":
-                    reval = "decimal";
-                    break;
-                case "timestamp":
-                    reval = "dateTime";
-                    break;
-                case "tinyint":
-                    reval = "byte";
-                    break;
-                case "uniqueidentifier":
-                    reval = "guid";
-                    break;
-                case "varbinary":
-                    reval = "byte[]";
-                    break;
-                case "varchar":
-                    reval = "string";
-                    break;
-                case "Variant":
-                    reval = "object";
-                    break;
-                default:
-                    reval = "string";
-                    break;
-            }
-            return reval;
-        }
-
+  
     }
 }

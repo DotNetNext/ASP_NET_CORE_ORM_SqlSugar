@@ -105,24 +105,51 @@ namespace SqlSugar
         /// 将Request里的参数转成SqlParameter[]
         /// </summary>
         /// <returns></returns>
-        internal static void RequestParasToSqlParameters(SqlParameterCollection  oldParas)
+        internal static void RequestParasToSqlParameters(SqlParameterCollection oldParas)
         {
-            var oldParaList= oldParas.Cast<SqlParameter>().ToList();
-            var paraDictionarAll =SqlSugarTool.GetParameterDictionary();
+            var oldParaList = oldParas.Cast<SqlParameter>().ToList();
+            var paraDictionarAll = SqlSugarTool.GetParameterDictionary();
             if (paraDictionarAll != null && paraDictionarAll.Count() > 0)
             {
-            
+
                 foreach (KeyValuePair<string, string> it in paraDictionarAll)
                 {
-                 
-                    var par=new SqlParameter("@" + it.Key, it.Value);
-                    if (!oldParaList.Any(oldPara=>oldPara.ParameterName==("@"+it.Key)))
+
+                    var par = new SqlParameter("@" + it.Key, it.Value);
+                    if (!oldParaList.Any(oldPara => oldPara.ParameterName == ("@" + it.Key)))
                     {
                         oldParas.Add(par);
                     }
                 }
             }
         }
+        /// <summary>
+        /// 获取转释后的表名和列名
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static string GetTranslationSqlName(this string tableName)
+        {
+            return SqlSugarTool.GetTranslationSqlName(tableName);
+        }
+        /// <summary>
+        /// 获取参数名
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static string GetSqlParameterName(this string name)
+        {
+            return SqlSugarTool.GetSqlParameterName(name);
+        }
 
+        /// <summary>
+        ///获取没有符号的参数名称
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static string GetSqlParameterNameNoParSymbol(this string name)
+        {
+            return SqlSugarTool.GetSqlParameterNameNoParSymbol(name);
+        }
     }
 }
