@@ -23,6 +23,23 @@ namespace NewTest.Demos
 
                 db.ClassGenerating.CreateClassFiles(db, ("e:/TestModels"), "Models");
 
+
+                //批量设置别名表,可以方便生成指定格式的实体对象
+                db.ClassGenerating.ForeachTables(db, tableName =>
+                {
+                    db.AddMappingTable(new KeyValue() { Key = "Rename_"+tableName, Value =  tableName });
+                });
+
+                //生成的文件都Rename_开头
+                db.ClassGenerating.CreateClassFiles(db, ("e:/TestModels"), "Models",
+                    null, 
+                    className => { 
+                      //生成文件之后的回调
+                    }, tableName => {
+                      //生成文件之前的回调
+                    });
+
+
                 //只生成student和school表的实体
                 db.ClassGenerating.CreateClassFilesByTableNames(db, "e:/TestModels2", "Models", new string[] { "student", "school" });
 
@@ -37,7 +54,7 @@ namespace NewTest.Demos
                 //改变值（lassTemplate.ItemTemplate=XXXX）可以自定义格式
                 var tempItem = ClassTemplate.ItemTemplate;//例如可以在生成的实体添加默认构造函数给指定的字段赋默认值或者公司信息等
                 var temp = ClassTemplate.Template;
-
+                var temSummary = ClassTemplate.ClassFieldSummaryTemplate;
 
 
                 //设置新格式模板

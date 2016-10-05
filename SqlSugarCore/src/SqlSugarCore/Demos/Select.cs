@@ -187,7 +187,7 @@ namespace NewTest.Demos
 
                 //Join子查询语句加分页的写法
                 var childQuery = db.Queryable<Area>().Where("id=@id").Select(it => new { id = it.id }).ToSql();//创建子查询SQL
-                string childTableName = string.Format("({0})", childQuery.Key);//将SQL语句用()包成表
+                string childTableName =SqlSugarTool.PackagingSQL(childQuery.Key);//将SQL语句用()包成表
                 var queryable = db.Queryable<Student>()
                  .JoinTable<School>((s1, s2) => s1.sch_id == s2.id)  //LEFT JOIN School  s2 ON  ( s1.sch_id  = s2.id )  
                  .JoinTable(childTableName, "a1", "a1.id=s2.areaid", new { id = 1 }, JoinType.INNER) //INNER JOIN (SELECT *  FROM [Area]   WHERE 1=1  AND id=@id   ) a1 ON a1.id=s2.areaid
@@ -195,7 +195,7 @@ namespace NewTest.Demos
 
                 var list = queryable.Select<School, Area, V_Student>((s1, s2, a1) => new V_Student { id = s1.id, name = s1.name, SchoolName = s2.name, AreaName = a1.name })
                     .ToPageList(0, 200);
-                var count2 = list.Count;
+                var count2 = queryable.Count();
 
 
                 //拼接例子
@@ -225,12 +225,12 @@ namespace NewTest.Demos
 
                 //条件函数的支持(字段暂不支持函数,只有参数支持) 目前只支持这么多
                 var par1 = "2015-1-1"; var par2 = "   我 有空格A, ";
-                var r1 = db.Queryable<Student>().Where(it => it.name == par1.ObjToString()).ToSql(); //ObjToString会将null转转成""
-                var r2 = db.Queryable<InsertTest>().Where(it => it.d1 == par1.ObjToDate()).ToSql();
-                var r3 = db.Queryable<InsertTest>().Where(it => it.id == 1.ObjToInt()).ToSql();//ObjToInt会将null转转成0
-                var r4 = db.Queryable<InsertTest>().Where(it => it.id == 2.ObjToDecimal()).ToSql();
-                var r5 = db.Queryable<InsertTest>().Where(it => it.id == 3.ObjToMoney()).ToSql();
-                var r6 = db.Queryable<InsertTest>().Where(it => it.v1 == par2.Trim()).ToSql();
+                var r1 = db.Queryable<Student>().Where(it => it.name == par1.ObjToString()).ToList(); //ObjToString会将null转转成""
+                var r2 = db.Queryable<InsertTest>().Where(it => it.d1 == par1.ObjToDate()).ToList();
+                var r3 = db.Queryable<InsertTest>().Where(it => it.id == 1.ObjToInt()).ToList();//ObjToInt会将null转转成0
+                var r4 = db.Queryable<InsertTest>().Where(it => it.id == 2.ObjToDecimal()).ToList();
+                var r5 = db.Queryable<InsertTest>().Where(it => it.id == 3.ObjToMoney()).ToList();
+                var r6 = db.Queryable<InsertTest>().Where(it => it.v1 == par2.Trim()).ToList();
                 var convert1 = db.Queryable<Student>().Where(c => c.name == "a".ToString()).ToList();
                 var convert2 = db.Queryable<Student>().Where(c => c.id == Convert.ToInt32("1")).ToList();
                 var convert3 = db.Queryable<Student>().Where(c => c.name == par2.ToLower()).ToList();
@@ -375,7 +375,7 @@ namespace NewTest.Demos
                 db.IsClearParameters = false;//禁止清除参数
                 pars[1].Direction = ParameterDirection.Output; //将p2设为 output
                 var spResult2 = db.SqlQuery<School>("exec sp_school @p1,@p2 output", pars);
-                db.IsClearParameters = true;//启动请动清除参数
+                db.IsClearParameters = true;//启用清除参数
                 var outPutValue = pars[1].Value;//获取output @p2的值
 
                 //获取第一行第一列的值
@@ -383,9 +383,7 @@ namespace NewTest.Demos
                 int v2 = db.GetInt("select 1 as name");
                 double v3 = db.GetDouble("select 1 as name");
                 decimal v4 = db.GetDecimal("select 1 as name");
-
-                //多个结果集
-                var ds= db.GetDataSetAll("select 1 as id;select 2 as id");
+                //....
             }
         }
 
