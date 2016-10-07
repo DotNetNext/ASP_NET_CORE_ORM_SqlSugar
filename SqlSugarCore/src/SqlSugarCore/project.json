@@ -9,7 +9,8 @@
       "type": "platform",
       "version": "1.0.1"
     },
-    "SqlSugarForCore": "1.0.0-*"
+    "SqlSugarForCore": "1.0.0-*",
+    "System.Text.Encoding.CodePages": "4.0.1"
   },
 
   "frameworks": {
