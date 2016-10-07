@@ -12,12 +12,9 @@ namespace SqlSugarTest
     {
         public static void Main(string[] args)
         {
-            //解决Core输出中文乱码
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-
+    
             //设置执行的DEMO
-            string switchOn = "filter2";
+            string switchOn = "select";
             IDemos demo = null;
             switch (switchOn)
             {

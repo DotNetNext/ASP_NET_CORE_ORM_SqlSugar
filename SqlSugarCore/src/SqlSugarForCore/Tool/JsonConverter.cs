@@ -28,7 +28,12 @@ namespace SqlSugar
                 Dictionary<string, object> childRow = new Dictionary<string, object>();
                 foreach (DataColumn col in table.Columns)
                 {
-                    childRow.Add(col.ColumnName, row[col.ColumnName]);
+                    var columnValue = row[col.ColumnName];
+                    if (columnValue == DBNull.Value)
+                    {
+                        columnValue = null;
+                    }
+                    childRow.Add(col.ColumnName, columnValue);
                 }
                 parentRow.Add(childRow);
             }
