@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>sqlSugarCore</id>
-    <version>3.0.1.2</version>
+    <version>3.0.1.3</version>
     <authors>sunkaixuan</authors>
     <owners>Landa</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
@@ -24,7 +24,7 @@
     </dependencies>
   </metadata>
   <files>
-   <file src="c:\Users\ss去\OneDrive\Asp.net\Project\SqlSugarCore\SqlSugarCore\src\SqlSugarForCore\bin\Debug\netstandard1.6\SqlSugarForCore.dll" target="lib\netstandard1.6"></file>
-   <file src="c:\Users\ss去\OneDrive\Asp.net\Project\SqlSugarCore\SqlSugarCore\src\SqlSugarForCore\bin\Debug\netstandard1.6\SqlSugarForCore.xml" target="lib\netstandard1.6"></file>
+   <file src="F:\MyOpenSource\SqlSugarCore\SqlSugarCore\src\SqlSugarForCore\bin\Debug\netstandard1.6\SqlSugarForCore.dll" target="lib\netstandard1.6"></file>
+   <file src="F:\MyOpenSource\SqlSugarCore\SqlSugarCore\src\SqlSugarForCore\bin\Debug\netstandard1.6\SqlSugarForCore.xml" target="lib\netstandard1.6"></file>
   </files>
 </package>
