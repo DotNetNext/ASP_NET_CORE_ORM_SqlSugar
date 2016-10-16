@@ -42,17 +42,16 @@ namespace NewTest.Demos
             {
 
 
-                //---------Queryable<T>,扩展函数查询---------//
-
-                //针对单表或者视图查询
-
                 //查询所有
                 var student = db.Queryable<Student>().ToList();
                 var studentDynamic = db.Queryable<Student>().ToDynamic();
                 var studentJson = db.Queryable<Student>().ToJson();
 
+
                 //查询单条
                 var single = db.Queryable<Student>().Single(c => c.id == 1);
+                //查询单条根据主键
+                var singleByPk = db.Queryable<Student>().InSingle(1);
                 //查询单条没有记录返回空对象
                 var singleOrDefault = db.Queryable<Student>().SingleOrDefault(c => c.id == 11111111);
                 //查询单条没有记录返回空对象
@@ -118,6 +117,7 @@ namespace NewTest.Demos
                 var list2 = db.Queryable<Student>().In("id", intArray).ToList();
                 var list3 = db.Queryable<Student>().In(it => it.id, intList).ToList();
                 var list4 = db.Queryable<Student>().In("id", intList).ToList();
+                var list6 = db.Queryable<Student>().In(intList).ToList();//不设置字段默认主键
 
                 //分组查询
                 var list7 = db.Queryable<Student>().Where(c => c.id < 20).GroupBy(it => it.sex).Select("sex,count(*) Count").ToDynamic();
@@ -240,7 +240,11 @@ namespace NewTest.Demos
                 var c2 = db.Queryable<Student>().Where(c => c.name.StartsWith("a")).ToList();
                 var c3 = db.Queryable<Student>().Where(c => c.name.EndsWith("a")).ToList();
                 var c4 = db.Queryable<Student>().Where(c => !string.IsNullOrEmpty(c.name)).ToList();
-
+                var c5 = db.Queryable<Student>().Where(c => c.name.Equals("小杰")).ToList();
+                var c6 = db.Queryable<Student>().Where(c => c.name.Length > 4).ToList();
+                var time = db.Queryable<InsertTest>().Where(c => c.d1>DateTime.Now.AddDays(1)).ToList();
+                var time2 = db.Queryable<InsertTest>().Where(c => c.d1 > DateTime.Now.AddYears(1)).ToList();
+                var time3 = db.Queryable<InsertTest>().Where(c => c.d1 > DateTime.Now.AddMonths(1)).ToList();
             }
         }
 
@@ -377,6 +381,14 @@ namespace NewTest.Demos
                 var spResult2 = db.SqlQuery<School>("exec sp_school @p1,@p2 output", pars);
                 db.IsClearParameters = true;//启用清除参数
                 var outPutValue = pars[1].Value;//获取output @p2的值
+
+
+                //存储过程优化操作
+                var pars2 = SqlSugarTool.GetParameters(new { p1 = 1, p2 = 0 }); //将匿名对象转成SqlParameter
+                db.CommandType = CommandType.StoredProcedure;//指定为存储过程可比上面少写EXEC和参数
+                var spResult3 = db.SqlQuery<School>("sp_school", pars2);
+                db.CommandType = CommandType.Text;//还原回默认
+
 
                 //获取第一行第一列的值
                 string v1 = db.GetString("select '张三' as name");

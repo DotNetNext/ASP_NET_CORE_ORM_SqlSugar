@@ -34,6 +34,10 @@ namespace NewTest.Demos
                 var id = db.Insert(s);
                 s.classId = id.ObjToInt();
 
+
+                db.SqlBulkCopy(new List<TestStudent>() { s });
+
+
                 //更新
                 db.Update(s);
                 db.Update<TestStudent, int>(s, 100);
@@ -42,6 +46,9 @@ namespace NewTest.Demos
 
                 //删除
                 db.Delete<TestStudent>(it => it.classId == 100);
+
+                //根据实体赋值实体一定要有主键，并且要有值。
+                db.Delete(new TestStudent() {  classId = 200 });
             }
         }
 
