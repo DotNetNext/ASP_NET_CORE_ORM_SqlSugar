@@ -354,7 +354,7 @@ namespace SqlSugar
 
         }
 
-        internal void Fill(DataSet ds)
+        public void Fill(DataSet ds)
         {
             if (ds == null) {
                 ds = new DataSet();

@@ -57,7 +57,7 @@ namespace SqlSugar
                 //取属性上的自定义特性
                 foreach (PropertyInfo propInfo in objType.GetProperties())
                 {
-                    object[] objAttrs = propInfo.GetType().GetCustomAttributes(typeof(SugarMappingAttribute), true);
+                    object[] objAttrs = propInfo.GetCustomAttributes(typeof(SugarMappingAttribute), true).ToArray();
                     if (objAttrs.Length > 0)
                     {
                         if (objAttrs[0] is SugarMappingAttribute)

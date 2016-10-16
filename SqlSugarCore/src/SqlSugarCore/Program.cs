@@ -15,7 +15,7 @@ namespace SqlSugarTest
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             //设置执行的DEMO
-            string switchOn = "select";
+            string switchOn = "attributesmapping";
             IDemos demo = null;
             switch (switchOn)
             {
