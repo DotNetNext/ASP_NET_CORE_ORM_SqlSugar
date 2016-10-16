@@ -130,8 +130,9 @@ namespace SqlSugar
         /// 将实体对象转换成SqlParameter[] 
         /// </summary>
         /// <param name="obj"></param>
+        /// <param name="pis"></param>
         /// <returns></returns>
-        public static SqlParameter[] GetParameters(object obj)
+        public static SqlParameter[] GetParameters(object obj,PropertyInfo [] pis=null)
         {
             List<SqlParameter> listParams = new List<SqlParameter>();
             if (obj != null)
@@ -164,7 +165,14 @@ namespace SqlSugar
                 }
                 else
                 {
-                    var propertiesObj = type.GetProperties();
+                    PropertyInfo[] propertiesObj = null;
+                    if (pis != null)
+                    {
+                        propertiesObj = pis;
+                    }
+                    else {
+                        propertiesObj=type.GetProperties();
+                    }
                     string replaceGuid = Guid.NewGuid().ToString();
                     foreach (PropertyInfo r in propertiesObj)
                     {

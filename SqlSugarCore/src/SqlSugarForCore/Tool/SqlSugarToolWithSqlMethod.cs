@@ -196,7 +196,14 @@ namespace SqlSugar
             string key = "GetIdentityKeyByTableName" + tableName;
             var cm = CacheManager<List<KeyValue>>.GetInstance();
             List<KeyValue> identityInfo = null;
-            string sql = string.Format(@"
+            if (cm.ContainsKey(key))
+            {
+                identityInfo = cm[key];
+                return identityInfo;
+            }
+            else
+            {
+                string sql = string.Format(@"
                             declare @Table_name varchar(60)
                             set @Table_name = '{0}';
 
@@ -214,13 +221,6 @@ namespace SqlSugar
 
                             Where upper(so.name) = upper(@Table_name)
          ", tableName);
-            if (cm.ContainsKey(key))
-            {
-                identityInfo = cm[key];
-                return identityInfo;
-            }
-            else
-            {
                 var isLog = db.IsEnableLogEvent;
                 db.IsEnableLogEvent = false;
                 var dt = db.GetDataTable(sql);
@@ -352,6 +352,7 @@ namespace SqlSugar
                 case "datetime":
                     reval = "dateTime";
                     break;
+                case "single":
                 case "decimal":
                     reval = "decimal";
                     break;
@@ -421,7 +422,7 @@ namespace SqlSugar
         /// <summary>
         /// 获取转释后的表名和列名
         /// </summary>
-        /// <param name="tableName"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
         internal static string GetTranslationSqlName(string name)
         {

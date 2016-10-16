@@ -50,13 +50,12 @@ namespace SqlSugar
             return values.Contains(thisValue);
         }
 
-        /// <summary>
+       /// <summary>
         /// 在里面吗?
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="thisValue"></param>
-        /// <param name="values"></param>
-        /// <returns></returns>
+       /// </summary>
+       /// <param name="thisValue"></param>
+       /// <param name="inValues"></param>
+       /// <returns></returns>
         public static bool IsContainsIn(this string thisValue, params string[] inValues)
         {
             return inValues.Any(it => thisValue.Contains(it));
@@ -231,11 +230,10 @@ namespace SqlSugar
         }
 
         /// <summary>
-        ///是适合正则匹配?
+        /// 是适合正则匹配?
         /// </summary>
         /// <param name="thisValue"></param>
-        /// <param name="begin">大于等于begin</param>
-        /// <param name="end">小于等于end</param>
+        /// <param name="pattern"></param>
         /// <returns></returns>
         public static bool IsMatch(this object thisValue, string pattern)
         {

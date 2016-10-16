@@ -57,27 +57,33 @@ namespace SqlSugar
                 //取属性上的自定义特性
                 foreach (PropertyInfo propInfo in objType.GetProperties())
                 {
-                    object[] objAttrs = propInfo.GetCustomAttributes(typeof(SugarMappingAttribute), true).ToArray();
+                    object[] objAttrs = propInfo.GetType().GetCustomAttributes(typeof(SugarMappingAttribute), true);
                     if (objAttrs.Length > 0)
                     {
-                        SugarMappingAttribute attr = objAttrs[0] as SugarMappingAttribute;
-                        if (attr != null)
+                        if (objAttrs[0] is SugarMappingAttribute)
                         {
-                            columnInfoList.Add(new KeyValue() { Key = propInfo.Name, Value = attr.ColumnName }); //列名
+                            SugarMappingAttribute attr = objAttrs[0] as SugarMappingAttribute;
+                            if (attr != null)
+                            {
+                                columnInfoList.Add(new KeyValue() { Key = propInfo.Name, Value = attr.ColumnName }); //列名
+                            }
                         }
                     }
                 }
 
                 //取类上的自定义特性
-                object[] objs = objType.GetTypeInfo().GetCustomAttributes(typeof(SugarMappingAttribute), true).ToArray();
+                object[] objs = objType.GetCustomAttributes(typeof(SugarMappingAttribute), true);
                 foreach (object obj in objs)
                 {
-                    SugarMappingAttribute attr = obj as SugarMappingAttribute;
-                    if (attr != null)
+                    if (obj is SugarMappingAttribute)
                     {
+                        SugarMappingAttribute attr = obj as SugarMappingAttribute;
+                        if (attr != null)
+                        {
 
-                        tableName = attr.TableName;//表名只有获取一次
-                        break;
+                            tableName = attr.TableName;//表名只有获取一次
+                            break;
+                        }
                     }
                 }
                 if (string.IsNullOrEmpty(tableName))
@@ -92,7 +98,7 @@ namespace SqlSugar
         }
     }
 
-    public class SugarMappingModel
+    internal class SugarMappingModel
     {
 
         public KeyValue TableMaping { get; set; }

@@ -14,8 +14,7 @@ namespace SqlSugar
     /// ** 作者：sunkaixuan
     /// ** 使用说明：http://www.cnblogs.com/sunkaixuan/p/4563462.html
     /// </summary>
-    /// <typeparam name="K">键</typeparam>
-    /// <typeparam name="V">值</typeparam>
+    /// <typeparam name="V">值类型</typeparam>
     internal class CacheManager<V> : IStorageObject<V>
     {
 
@@ -156,9 +155,9 @@ namespace SqlSugar
         }
 
         /// <summary>
-        /// 清除所有包含关键字的缓存
+        /// 清除所有缓存
         /// </summary>
-        /// <param name="removeKey">关键字</param>
+        /// <param name="removeExpression">表达式条件</param>
         public override void RemoveAll(Func<string, bool> removeExpression)
         {
             //throw new NotImplementedException();

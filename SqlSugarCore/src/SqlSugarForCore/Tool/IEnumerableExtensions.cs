@@ -99,8 +99,6 @@ namespace SqlSugar
         }
         #endregion
 
-
-
         /// <summary>
         /// 解决GUID在SQL和C#中，排序方式不一致
         /// </summary>

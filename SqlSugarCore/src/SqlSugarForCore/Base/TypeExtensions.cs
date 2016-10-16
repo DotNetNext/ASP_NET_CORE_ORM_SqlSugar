@@ -61,5 +61,17 @@ namespace SqlSugar
         {
             return type.GetTypeInfo().IsValueType;
         }
+
+
+        public static bool IsClass(this Type type)
+        {
+            return type.GetTypeInfo().IsClass;
+        }
+
+        public static object [] GetCustomAttributes(this Type type,Type attrType,bool inherit)
+        {
+            return type.GetTypeInfo().GetCustomAttributes(attrType, inherit).ToArray();
+        }
+        
     }
 }
