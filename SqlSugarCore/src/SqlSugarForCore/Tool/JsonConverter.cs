@@ -39,7 +39,12 @@ namespace SqlSugar
             }
             return JsonConvert.SerializeObject(parentRow);
         }
-
+        /// <summary>
+        /// DataTable转成Json字符串
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="dateFormat"></param>
+        /// <returns></returns>
         public static string DataTableToJson(DataTable table, string dateFormat)
         {
             var reval = DataTableToJson(table);

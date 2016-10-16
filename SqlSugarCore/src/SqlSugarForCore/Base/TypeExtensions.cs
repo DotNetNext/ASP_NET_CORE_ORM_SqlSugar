@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 namespace SqlSugar
 {
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
 
         public static Type[] GetGenericArguments(this Type type)

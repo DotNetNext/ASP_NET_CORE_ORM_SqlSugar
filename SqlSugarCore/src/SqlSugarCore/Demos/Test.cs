@@ -105,16 +105,7 @@ namespace NewTest.Demos
 
                 Console.WriteLine(ex.Message);
             }
-            try
-            {
-                var e6 = db.Queryable<Student>().Where(c => c.name.First() != null).ToList();
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine(ex.Message);
-            }
-
+           
             //组合测试
             var z= db.Queryable<Student>().Where(c => (c.name.Equals(Getp().name)||c.name==p.name)&&true&&c.id>1).ToList();
             var z23 = db.Queryable<Student>().Where(c => !string.IsNullOrEmpty(c.name) || (c.id==1||c.name.Contains(p.name))).ToList();

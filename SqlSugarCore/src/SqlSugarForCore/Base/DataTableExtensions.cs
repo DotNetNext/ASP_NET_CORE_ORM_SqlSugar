@@ -15,6 +15,9 @@ namespace SqlSugar
     /// </summary>
     public class DataSet
     {
+        /// <summary>
+        /// 数据表
+        /// </summary>
         public List<DataTable> Tables = new List<DataTable>();
     }
 
@@ -40,20 +43,38 @@ namespace SqlSugar
     /// </summary>
     public class DataColumn
     {
+        /// <summary>
+        /// Data Column
+        /// </summary>
         public DataColumn()
         {
 
         }
+        /// <summary>
+        /// Column Name
+        /// </summary>
+        /// <param name="columnName"></param>
         public DataColumn(string columnName)
         {
             this.ColumnName = columnName;
         }
+        /// <summary>
+        /// Data Column
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="dataType"></param>
         public DataColumn(string columnName, Type dataType)
         {
             this.ColumnName = columnName;
             this.DataType = dataType;
         }
+        /// <summary>
+        /// Column Name
+        /// </summary>
         public string ColumnName { get; internal set; }
+        /// <summary>
+        /// Data Type
+        /// </summary>
         public Type DataType { get; internal set; }
     }
     /// <summary>
@@ -61,6 +82,11 @@ namespace SqlSugar
     /// </summary>
     public class DataColumnCollection : IEnumerable, ICollection, IEnumerator
     {
+        /// <summary>
+        /// Get Item By Index
+        /// </summary>
+        /// <param name="thisIndex"></param>
+        /// <returns></returns>
         public DataColumn this[int thisIndex]
         {
             get
@@ -70,6 +96,9 @@ namespace SqlSugar
         }
         private int index = -1;
         private List<DataColumn> cols;
+        /// <summary>
+        /// Count
+        /// </summary>
         public int Count
         {
             get
@@ -81,7 +110,10 @@ namespace SqlSugar
                 return this.cols.Count;
             }
         }
-
+        /// <summary>
+        /// Add
+        /// </summary>
+        /// <param name="col"></param>
         public void Add(DataColumn col)
         {
             if (this.cols == null)
@@ -90,7 +122,9 @@ namespace SqlSugar
             }
             this.cols.Add(col);
         }
-
+        /// <summary>
+        /// Is Synchronized
+        /// </summary>
         public bool IsSynchronized
         {
             get
@@ -98,7 +132,9 @@ namespace SqlSugar
                 return true;
             }
         }
-
+        /// <summary>
+        /// Sync Root
+        /// </summary>
         public object SyncRoot
         {
             get
@@ -106,7 +142,9 @@ namespace SqlSugar
                 return null;
             }
         }
-
+        /// <summary>
+        /// Current
+        /// </summary>
         public object Current
         {
             get
@@ -114,23 +152,28 @@ namespace SqlSugar
                 return cols[index];
             }
         }
-
+        /// <summary>
+        /// Copy To
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
         public void CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
         }
 
-        //
-        // 摘要:
-        //     获取该集合的 System.Collections.IEnumerator。
-        //
-        // 返回结果:
-        //     该集合的 System.Collections.IEnumerator。
+        /// <summary>
+        /// 获取该集合的 System.Collections.IEnumerator
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator GetEnumerator()
         {
             return (IEnumerator)this; ;
         }
-
+        /// <summary>
+        /// Move Next
+        /// </summary>
+        /// <returns></returns>
         public bool MoveNext()
         {
             index++;
@@ -139,11 +182,19 @@ namespace SqlSugar
                 Reset();
             return isNext;
         }
+        /// <summary>
+        /// Reset
+        /// </summary>
 
         public void Reset()
         {
             index = -1;
         }
+        /// <summary>
+        /// Contains Key
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
 
         public bool ContainsKey(string name)
         {
@@ -156,7 +207,11 @@ namespace SqlSugar
     /// </summary>
     public class DataRowCollection : IEnumerable, ICollection, IEnumerator
     {
-
+        /// <summary>
+        /// Get item by index
+        /// </summary>
+        /// <param name="thisIndex"></param>
+        /// <returns></returns>
         public DataRow this[int thisIndex]
         {
             get
@@ -167,6 +222,9 @@ namespace SqlSugar
 
         private int index = -1;
         private List<DataRow> Rows = null;
+        /// <summary>
+        /// Count
+        /// </summary>
         public int Count
         {
             get
@@ -179,6 +237,9 @@ namespace SqlSugar
             }
         }
 
+        /// <summary>
+        /// Current
+        /// </summary>
         public object Current
         {
             get
@@ -190,7 +251,9 @@ namespace SqlSugar
                 return Rows[index];
             }
         }
-
+        /// <summary>
+        /// Is Synchronized
+        /// </summary>
         public bool IsSynchronized
         {
             get
@@ -198,7 +261,9 @@ namespace SqlSugar
                 return true;
             }
         }
-
+        /// <summary>
+        /// Sync Root
+        /// </summary>
         public object SyncRoot
         {
             get
@@ -206,23 +271,29 @@ namespace SqlSugar
                 return null;
             }
         }
-
+        /// <summary>
+        /// Copy To
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
         public void CopyTo(Array array, int index)
         {
             throw new NotImplementedException();
         }
 
-        //
-        // 摘要:
-        //     获取该集合的 System.Collections.IEnumerator。
-        //
-        // 返回结果:
-        //     该集合的 System.Collections.IEnumerator。
+        /// <summary>
+        /// 获取该集合的 System.Collections.IEnumerator。
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator GetEnumerator()
         {
             return (IEnumerator)this; ;
         }
 
+        /// <summary>
+        /// Move Next
+        /// </summary>
+        /// <returns></returns>
         public bool MoveNext()
         {
             index++;
@@ -232,11 +303,18 @@ namespace SqlSugar
             return isNext;
         }
 
+        /// <summary>
+        /// Reset
+        /// </summary>
         public void Reset()
         {
             index = -1;
         }
 
+        /// <summary>
+        /// Add
+        /// </summary>
+        /// <param name="daRow"></param>
         internal void Add(DataRow daRow)
         {
             if (Rows == null)
@@ -254,11 +332,21 @@ namespace SqlSugar
     {
         private Dictionary<string, object> obj = new Dictionary<string, object>();
 
+        /// <summary>
+        /// Add
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
         public void Add(string key, object value)
         {
             obj.Add(key, value);
         }
 
+        /// <summary>
+        /// Get Item  By Name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public object this[string name]
         {
             get
@@ -266,6 +354,12 @@ namespace SqlSugar
                 return obj[name];
             }
         }
+
+        /// <summary>
+        /// Get Item By Index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public object this[int index]
         {
             get
@@ -285,6 +379,11 @@ namespace SqlSugar
             }
         }
 
+        /// <summary>
+        /// Contains Key
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
         public bool ContainsKey(string columnName)
         {
             if (this.obj == null) return false;
@@ -300,17 +399,29 @@ namespace SqlSugar
         private string sql;
         private SqlConnection _sqlConnection;
 
+        /// <summary>
+        /// SqlDataAdapter
+        /// </summary>
+        /// <param name="command"></param>
         public SqlDataAdapter(SqlCommand command)
         {
             this.command = command;
         }
 
+        /// <summary>
+        /// SqlDataAdapter
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="_sqlConnection"></param>
         public SqlDataAdapter(string sql, SqlConnection _sqlConnection)
         {
             this.sql = sql;
             this._sqlConnection = _sqlConnection;
         }
 
+        /// <summary>
+        /// SelectCommand
+        /// </summary>
         public SqlCommand SelectCommand
         {
             get
@@ -323,6 +434,10 @@ namespace SqlSugar
             }
         }
 
+        /// <summary>
+        /// Fill
+        /// </summary>
+        /// <param name="dt"></param>
         public void Fill(DataTable dt)
         {
             if (dt == null)
@@ -354,6 +469,10 @@ namespace SqlSugar
 
         }
 
+        /// <summary>
+        /// Fill
+        /// </summary>
+        /// <param name="ds"></param>
         public void Fill(DataSet ds)
         {
             if (ds == null) {

@@ -44,13 +44,12 @@ namespace SqlSugar
             return path;
 
         }
+
         /// <summary>
         /// 根据文件目录、日期、文件名生成文件路径，并且创建文件存放目录
-        /// 格式为:/directory/2015/01/01/filename
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="directory"></param>
-        /// <param name="code"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
         public string GetFiePathAndCreateDirectoryByDate<T>(string directory, string fileName)
@@ -827,8 +826,8 @@ namespace SqlSugar
         /// <summary>
         /// 根据路径得到文件流
         /// </summary>
-        /// <param name="strFilePath"></param>
-        /// <param name="strValue"></param>
+        /// <param name="Path"></param>
+        /// <returns></returns>
         public static byte[] GetFileSream(string Path)
         {
             byte[] buffer = null;
