@@ -297,7 +297,7 @@ namespace SqlSugar
         public bool MoveNext()
         {
             index++;
-            var isNext = index < Rows.Count;
+            var isNext = index < (Rows==null?0:Rows.Count);
             if (!isNext)
                 Reset();
             return isNext;
