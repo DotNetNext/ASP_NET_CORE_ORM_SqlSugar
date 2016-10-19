@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq.Expressions;
 
 namespace SqlSugar
 {
@@ -22,8 +23,10 @@ namespace SqlSugar
         /// <typeparam name="TResult">实体类型</typeparam>
         /// <param name="expStr">拉姆达字符串</param>
         /// <param name="reval">查旬对象</param>
-        internal static void GetResult<TResult>(string expStr, Queryable<TResult> reval)
+        /// <param name="exp"></param>
+        internal static void GetResult<TResult>(string expStr, Queryable<TResult> reval, Expression exp)
         {
+            var isComplexAnalysis = IsComplexAnalysis(expStr);
             reval.SelectValue = Regex.Match(expStr, @"(?<=\{).*?(?=\})").Value;
             if (reval.SelectValue.IsNullOrEmpty())
             {
@@ -49,18 +52,58 @@ namespace SqlSugar
             {
                 foreach (var item in reval.DB._mappingColumns)
                 {
-                    reval.SelectValue = Regex.Replace(reval.SelectValue,@"\."+item.Key,"."+item.Value);
+                    reval.SelectValue = Regex.Replace(reval.SelectValue, @"\." + item.Key, "." + item.Value);
                 }
             }
+        }
+
+        private static bool IsComplexAnalysis(string expStr)
+        {
+            string errorFunName = null;
+            if (expStr.IsValuable() && (expStr.Contains("+<>") || Regex.IsMatch(expStr, @"\.[a-z,A-Z,_]\w*\.[a-z,A-Z,_]\w*?(\,|\})")))
+            {
+                throw new SqlSugarException("Select中的拉姆达表达式,不支持外部传参数,目前支持的写法 Where(\"1=1\",new {id=1}).Select(it=>{ id=\"" + SqlSugarTool.ParSymbol + "id\".ObjToInt()}");
+            }
+            if (expStr.IsValuable() && Regex.IsMatch(expStr, @"\+|\-|\*|\/"))
+            {
+                throw new SqlSugarException("Select中不支持变量的运算。");
+            }
+            string reg = @"(\.[a-z,A-Z,_]\w*?\(.*?\))|\=\s*[a-z,A-Z,_]\w*?\(.*?\)|\=\s*[a-z,A-Z,_]\w*?\(.*?\)|\=[a-z,A-Z,_]\w*.[a-z,A-Z,_]\w*.[a-z,A-Z,_]\w*";
+            if (expStr.IsValuable() & Regex.IsMatch(expStr, reg))
+            {
+                var ms = Regex.Matches(expStr, reg);
+                var errorNum = 0;
+                foreach (Match item in ms.Cast<Match>().OrderBy(it => it.Value.Split('.').Length))
+                {
+                    if (item.Value == null)
+                    {
+                        errorNum++;
+                        break;
+                    }
+                    if (!item.Value.IsMatch(@"\.ObjTo|Convert|ToString"))
+                    {
+                        errorNum++;
+                        errorFunName = item.Value;
+                        break;
+                    }
+                }
+                if (errorNum > 0)
+                {
+                    throw new SqlSugarException("Select中不支持函数" + errorFunName);
+                }
+            }
+            return false;
         }
         /// <summary>
         /// 单表情况
         /// </summary>
         /// <typeparam name="TResult">实体类型</typeparam>
         /// <param name="reval">查旬对象</param>
-        internal static void GetResult<TResult>(Queryable<TResult> reval)
+        /// <param name="exp"></param>
+        internal static void GetResult<TResult>(Queryable<TResult> reval, Expression exp)
         {
             string expStr = reval.SelectValue;
+            var isComplexAnalysis = IsComplexAnalysis(expStr);
             expStr = Regex.Match(expStr, @"(?<=\{).*?(?=\})").Value;
             if (expStr.IsNullOrEmpty())
             {
@@ -146,6 +189,10 @@ namespace SqlSugar
                     selectStr = selectStr.Replace(")", "");
                     selectStr = selectStr.Replace("(", "");
                 }
+            }
+            if (selectStr.Contains(".ToString"))
+            {
+                throw new SqlSugarException("Select中不支持ToString函数，请使用ObjectToString");
             }
             if (selectStr.Contains("+<>"))
             {
