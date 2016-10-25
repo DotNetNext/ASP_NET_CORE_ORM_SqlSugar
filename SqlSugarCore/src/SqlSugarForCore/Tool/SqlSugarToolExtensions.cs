@@ -151,5 +151,48 @@ namespace SqlSugar
         {
             return SqlSugarTool.GetSqlParameterNameNoParSymbol(name);
         }
+
+        /// <summary>
+        /// 数组条件筛选
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        internal static string[] ArrayWhere(this string[] thisValue, Func<string, bool> expression)
+        {
+            if (thisValue == null) return null;
+            thisValue = thisValue.Where(expression).ToArray();
+            return thisValue;
+        }
+
+        /// <summary>
+        /// 数组添加元素
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        internal static string[] ArrayAdd(this string[] thisValue, params string[] items)
+        {
+            if (thisValue == null) thisValue = new string[] { };
+            var reval = thisValue.ToList();
+            reval.AddRange(items);
+            thisValue = reval.ToArray();
+            return thisValue;
+        }
+
+        /// <summary>
+        /// 数组移除
+        /// </summary>
+        /// <param name="thisValue"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        internal static string[] ArrayRemove(this string[] thisValue, string item)
+        {
+            if (thisValue == null) thisValue = new string[] { };
+            var reval = thisValue.ToList();
+            reval.Remove(item);
+            thisValue = reval.ToArray();
+            return thisValue;
+        }
     }
 }

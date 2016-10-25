@@ -182,14 +182,32 @@ namespace SqlSugar
         public string[] DisableUpdateColumns { get; set; }
 
         /// <summary>
+        /// 添加禁止更新列
+        /// </summary>
+        /// <param name="columns"></param>
+        public void AddDisableUpdateColumn(params string[] columns)
+        {
+            this.DisableUpdateColumns = this.DisableUpdateColumns.ArrayAdd(columns);
+        }
+
+        /// <summary>
         /// 设置禁止插入的列
         /// </summary>
         public string[] DisableInsertColumns { get; set; }
 
         /// <summary>
-        ///设置Queryable或者Sqlable转换成JSON字符串时的日期格式
+        /// 添加禁止插入列
         /// </summary>
-        public string SerializerDateFormat = null;
+        /// <param name="columns"></param>
+        public void AddDisableInsertColumns(params string[] columns)
+        {
+            this.DisableInsertColumns = this.DisableInsertColumns.ArrayAdd(columns);
+        }
+
+    /// <summary>
+    ///设置Queryable或者Sqlable转换成JSON字符串时的日期格式
+    /// </summary>
+    public string SerializerDateFormat = null;
 
         /// <summary>
         /// 设置分页类型
@@ -775,7 +793,7 @@ namespace SqlSugar
             var columnNames = props.Select(it => it.Name).ToList();
             if (DisableInsertColumns.IsValuable())
             {//去除禁止插入列
-                columnNames.RemoveAll(it => DisableInsertColumns.Any(dc => dc.ToLower().Contains(it.ToLower())));
+                columnNames.RemoveAll(it => DisableInsertColumns.Any(dc => dc.ToLower()==(it.ToLower())));
             }
             //启用别名列
             if (this.IsEnableAttributeMapping = true && _mappingColumns.IsValuable())
@@ -863,6 +881,29 @@ namespace SqlSugar
 
 
         #region update
+        /// <summary>
+        /// 根据表达式条件将实体对象更新到数据库
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="setValues">set后面的部分字符串 例如( id=@id,num=num+1 )</param>
+        /// <param name="expression">表达式条件</param>
+        /// <param name="whereObj">匿名参数(例如:new{id=1,name="张三"})</param>
+        /// <returns></returns>
+        public bool Update<T>(string setValues, Expression<Func<T, bool>> expression, object whereObj = null)
+        {
+            Type type = typeof(T);
+            string typeName = type.Name;
+            typeName = GetTableNameByClassType(typeName);
+            Check.ArgumentNullException(setValues.IsNullOrEmpty(), "Update.setValues不为能空。");
+            ResolveExpress re = new ResolveExpress();
+            re.ResolveExpression(re, expression, this);
+            string sql = string.Format("UPDATE {0} SET {1} WHERE 1=1 {2}", typeName.GetTranslationSqlName(), setValues, re.SqlWhere);
+            var pars = SqlSugarTool.GetParameters(whereObj).ToList();
+            pars.AddRange(re.Paras);
+            var reval = base.ExecuteCommand(sql, pars.ToArray()) > 0;
+            sql = null;
+            return reval;
+        }
 
         /// <summary>
         /// 根据表达式条件将实体对象更新到数据库
@@ -1181,7 +1222,7 @@ namespace SqlSugar
             var columnNames = props.Select(it => it.Name).ToList();
             if (DisableUpdateColumns.IsValuable())
             {//去除禁止插入列
-                columnNames.RemoveAll(it => DisableUpdateColumns.Any(dc => dc.ToLower().Contains(it.ToLower())));
+                columnNames.RemoveAll(it => DisableUpdateColumns.Any(dc => dc.ToLower()==(it.ToLower())));
             }
             //启用别名列
             if (this.IsEnableAttributeMapping = true && _mappingColumns.IsValuable())
