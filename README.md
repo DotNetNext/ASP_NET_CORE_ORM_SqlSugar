@@ -9,6 +9,7 @@ Blog http://www.cnblogs.com/sunkaixuan
 
 #All versions
 
+
 ASP.NET 4.0+ MSSQL   https://github.com/sunkaixuan/SqlSugar
 
 ASP.NET CORE MSSQL   https://github.com/sunkaixuan/ASP_NET_CORE_ORM_SqlSugar
@@ -19,7 +20,11 @@ ASP.NET CORE MYSQL   https://github.com/sunkaixuan/ASP_NET_CORE_ORM_MySqlSugar
 
 ASP.NET 4.0+ Sqlite  https://github.com/sunkaixuan/SqliteSugar
 
+ASP.NET CORE Sqlite  https://github.com/sunkaixuan/ASP_NET_CORE_ORM_SqliteSugar
+
 ASP.NET 4.0+ ORACLE  https://github.com/sunkaixuan/OracleSugar
+
+ASP.NET CORE ORACLE  https://github.com/sunkaixuan/ASP_NET_CORE_ORM_OracleSugar
 
 
 # Instance SqlSugar object
