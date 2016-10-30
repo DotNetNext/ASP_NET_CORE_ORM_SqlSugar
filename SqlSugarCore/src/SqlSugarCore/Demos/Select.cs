@@ -50,6 +50,7 @@ namespace NewTest.Demos
 
                 //查询单条
                 var single = db.Queryable<Student>().Single(c => c.id == 1);
+                var single222 = db.Queryable<Student>().Single(c =>  1== c.id);
                 //查询单条根据主键
                 var singleByPk = db.Queryable<Student>().InSingle(1);
                 //查询单条没有记录返回空对象
