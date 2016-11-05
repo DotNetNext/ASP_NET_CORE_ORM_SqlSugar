@@ -408,7 +408,7 @@ namespace SqlSugar
                     reval = "object";
                     break;
                 default:
-                    reval = "string";
+                    reval = "other";
                     break;
             }
             return reval;

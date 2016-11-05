@@ -261,7 +261,7 @@ namespace SqlSugar
         /// <returns>Queryable</returns>
         public static Queryable<T> OrderBy<T>(this Queryable<T> queryable, string orderFileds)
         {
-            queryable.OrderByValue = orderFileds.ToSuperSqlFilter();
+            queryable.OrderByValue = orderFileds.ToSqlFilter();
             return queryable;
         }
 
@@ -330,7 +330,7 @@ namespace SqlSugar
         /// <returns>Queryable</returns>
         public static Queryable<T> GroupBy<T>(this Queryable<T> queryable, string groupFileds)
         {
-            queryable.GroupByValue = groupFileds.ToSuperSqlFilter();
+            queryable.GroupByValue = groupFileds.ToSqlFilter();
             return queryable;
         }
 
