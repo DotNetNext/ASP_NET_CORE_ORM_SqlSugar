@@ -45,9 +45,8 @@ namespace SqlSugar
         /// <param name="dr"></param>
         /// <param name="fields"></param>
         /// <param name="isClose"></param>
-        /// <param name="isTry"></param>
         /// <returns></returns>
-        internal static List<T> DataReaderToList<T>(Type type, IDataReader dr, string fields, bool isClose = true, bool isTry = true)
+        internal static List<T> DataReaderToList<T>(Type type, IDataReader dr, string fields, bool isClose = true)
         {
             if (type.Name.Contains("KeyValuePair"))
             {
@@ -132,7 +131,7 @@ namespace SqlSugar
         /// <param name="obj"></param>
         /// <param name="pis"></param>
         /// <returns></returns>
-        public static SqlParameter[] GetParameters(object obj,PropertyInfo [] pis=null)
+        public static SqlParameter[] GetParameters(object obj, PropertyInfo[] pis = null)
         {
             List<SqlParameter> listParams = new List<SqlParameter>();
             if (obj != null)
@@ -170,8 +169,9 @@ namespace SqlSugar
                     {
                         propertiesObj = pis;
                     }
-                    else {
-                        propertiesObj=type.GetProperties();
+                    else
+                    {
+                        propertiesObj = type.GetProperties();
                     }
                     string replaceGuid = Guid.NewGuid().ToString();
                     foreach (PropertyInfo r in propertiesObj)
@@ -193,6 +193,10 @@ namespace SqlSugar
                         {
                             var par = new SqlParameter("@" + r.Name, value);
                             SetParSize(par);
+                            if (value == DBNull.Value)
+                            {//防止文件类型报错
+                                SqlSugarTool.SetSqlDbType(r, par);
+                            }
                             listParams.Add(par);
                         }
                     }
@@ -304,7 +308,7 @@ namespace SqlSugar
             PropertyInfo propertyInfo = obj.GetType().GetProperty(property);
             return (Guid)propertyInfo.GetValue(obj, null);
         }
-  
+
         /// <summary>
         /// 使用页面自动填充sqlParameter时 Request.Form出现特殊字符时可以重写Request.Form方法，使用时注意加锁并且用到将该值设为null
         /// </summary>
@@ -323,6 +327,21 @@ namespace SqlSugar
             isNullable = unType != null;
             unType = unType ?? propertyInfo.PropertyType;
             return unType;
+        }
+
+        /// <summary>
+        /// 设置Sql类型
+        /// </summary>
+        /// <param name="prop"></param>
+        /// <param name="par"></param>
+        internal static void SetSqlDbType(PropertyInfo prop, SqlParameter par)
+        {
+            var isNullable = false;
+            var isByteArray = SqlSugarTool.GetUnderType(prop, ref isNullable) == typeof(byte[]);
+            if (isByteArray)
+            {
+                par.SqlDbType = SqlDbType.VarBinary;
+            }
         }
     }
 }

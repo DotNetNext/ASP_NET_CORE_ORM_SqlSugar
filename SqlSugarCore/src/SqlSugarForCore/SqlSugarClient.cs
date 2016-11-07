@@ -132,7 +132,7 @@ namespace SqlSugar
             }
             return name;
         }
-        private void AddFilter<T>(SqlSugar.Queryable<T> queryable, string key) where T : new()
+        private void AddFilter<T>(Queryable<T> queryable, string key) where T : new()
         {
             if (_filterRows.ContainsKey(key))
             {
@@ -187,6 +187,7 @@ namespace SqlSugar
         /// <param name="columns"></param>
         public void AddDisableUpdateColumn(params string[] columns)
         {
+
             this.DisableUpdateColumns = this.DisableUpdateColumns.ArrayAdd(columns);
         }
 
@@ -204,10 +205,10 @@ namespace SqlSugar
             this.DisableInsertColumns = this.DisableInsertColumns.ArrayAdd(columns);
         }
 
-    /// <summary>
-    ///设置Queryable或者Sqlable转换成JSON字符串时的日期格式
-    /// </summary>
-    public string SerializerDateFormat = null;
+        /// <summary>
+        ///设置Queryable或者Sqlable转换成JSON字符串时的日期格式
+        /// </summary>
+        public string SerializerDateFormat = null;
 
         /// <summary>
         /// 设置分页类型
@@ -350,7 +351,7 @@ namespace SqlSugar
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public Queryable<T> Queryable<T>() where T : new()
+        public Queryable<T> Queryable<T>() where T : class, new()
         {
             InitAttributes<T>();
             var queryable = new Queryable<T>() { DB = this, TableName = typeof(T).Name };
@@ -399,7 +400,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="tableName">T类型对应的真实表名</param>
         /// <returns></returns>
-        public Queryable<T> Queryable<T>(string tableName) where T : new()
+        public Queryable<T> Queryable<T>(string tableName) where T : class, new()
         {
             InitAttributes<T>();
             var queryable = new Queryable<T>() { DB = this, TableName = tableName };
@@ -513,7 +514,7 @@ namespace SqlSugar
                 }
             }
             var type = typeof(T);
-            if (CommandType == CommandType.Text)
+            if (base.CommandType == CommandType.Text)
             {
                 sql = string.Format(PubModel.SqlSugarClientConst.SqlQuerySqlTemplate, type.Name, sql);
             }
@@ -696,6 +697,10 @@ namespace SqlSugar
                     {
                         par.TypeName = "HIERARCHYID";
                     }
+                    if (val == DBNull.Value)
+                    {//防止文件类型报错
+                        SqlSugarTool.SetSqlDbType(prop, par);
+                    }
                     pars.Add(par);
                 }
             }
@@ -725,7 +730,7 @@ namespace SqlSugar
                         sql = sql.Replace(SqlSugarTool.ParSymbol + item.Key + ")", SqlSugarTool.ParSymbol + item.Value + ")");
                     }
                 }
-                var lastInsertRowId = GetScalar(sql, pars.ToArray());
+                var lastInsertRowId = base.GetScalar(sql, pars.ToArray());
                 return lastInsertRowId;
             }
             catch (Exception ex)
@@ -793,7 +798,7 @@ namespace SqlSugar
             var columnNames = props.Select(it => it.Name).ToList();
             if (DisableInsertColumns.IsValuable())
             {//去除禁止插入列
-                columnNames.RemoveAll(it => DisableInsertColumns.Any(dc => dc.ToLower()==(it.ToLower())));
+                columnNames.RemoveAll(it => DisableInsertColumns.Any(dc => dc.ToLower() == it.ToLower()));
             }
             //启用别名列
             if (this.IsEnableAttributeMapping = true && _mappingColumns.IsValuable())
@@ -889,7 +894,7 @@ namespace SqlSugar
         /// <param name="expression">表达式条件</param>
         /// <param name="whereObj">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns></returns>
-        public bool Update<T>(string setValues, Expression<Func<T, bool>> expression, object whereObj = null)
+        public bool Update<T>(string setValues, Expression<Func<T, bool>> expression, object whereObj = null) where T : class
         {
             Type type = typeof(T);
             string typeName = type.Name;
@@ -997,7 +1002,7 @@ namespace SqlSugar
             }
             try
             {
-                var updateRowCount = ExecuteCommand(sbSql.ToString(), parsList.ToArray());
+                var updateRowCount = base.ExecuteCommand(sbSql.ToString(), parsList.ToArray());
                 return updateRowCount > 0;
             }
             catch (Exception ex)
@@ -1151,7 +1156,7 @@ namespace SqlSugar
             }
             try
             {
-                var updateRowCount = ExecuteCommand(sbSql.ToString(), pars);
+                var updateRowCount = base.ExecuteCommand(sbSql.ToString(), pars);
                 sbSql = null;
                 return updateRowCount > 0;
             }
@@ -1222,7 +1227,7 @@ namespace SqlSugar
             var columnNames = props.Select(it => it.Name).ToList();
             if (DisableUpdateColumns.IsValuable())
             {//去除禁止插入列
-                columnNames.RemoveAll(it => DisableUpdateColumns.Any(dc => dc.ToLower()==(it.ToLower())));
+                columnNames.RemoveAll(it => DisableUpdateColumns.Any(dc => dc.ToLower() == it.ToLower()));
             }
             //启用别名列
             if (this.IsEnableAttributeMapping = true && _mappingColumns.IsValuable())
@@ -1326,7 +1331,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="deleteObj"></param>
         /// <returns></returns>
-        public bool Delete<T>(T deleteObj)
+        public bool Delete<T>(T deleteObj) where T : class
         {
             InitAttributes<T>();
             var isDynamic = typeof(T).IsAnonymousType();
@@ -1346,7 +1351,7 @@ namespace SqlSugar
             string sql = string.Format("DELETE FROM {0} WHERE {1}={2}", typeName.GetTranslationSqlName(), pkName.GetTranslationSqlName(), pkName.GetSqlParameterName());
             var par = new SqlParameter(pkName.GetSqlParameterName(), pkValue);
             SqlSugarTool.SetParSize(par);
-            bool isSuccess = ExecuteCommand(sql, par) > 0;
+            bool isSuccess = base.ExecuteCommand(sql, par) > 0;
             return isSuccess;
         }
 
@@ -1356,7 +1361,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="deleteObjList"></param>
         /// <returns>全部删除成功返回true</returns>
-        public bool Delete<T>(List<T> deleteObjList)
+        public bool Delete<T>(List<T> deleteObjList) where T : class
         {
             if (deleteObjList == null || deleteObjList.Count == 0) return false;
             var reval = true;
@@ -1377,7 +1382,7 @@ namespace SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="expression">表达式条件</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T>(Expression<Func<T, bool>> expression)
+        public bool Delete<T>(Expression<Func<T, bool>> expression) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
@@ -1386,7 +1391,7 @@ namespace SqlSugar
             ResolveExpress re = new ResolveExpress();
             re.ResolveExpression(re, expression, this);
             string sql = string.Format("DELETE FROM {0} WHERE 1=1 {1}", typeName.GetTranslationSqlName(), re.SqlWhere);
-            bool isSuccess = ExecuteCommand(sql, re.Paras.ToArray()) > 0;
+            bool isSuccess = base.ExecuteCommand(sql, re.Paras.ToArray()) > 0;
             return isSuccess;
         }
 
@@ -1398,7 +1403,7 @@ namespace SqlSugar
         /// <param name="SqlWhereString">不包含Where的字符串</param>
         /// <param name="whereObj">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T>(string SqlWhereString, object whereObj = null)
+        public bool Delete<T>(string SqlWhereString, object whereObj = null) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
@@ -1409,8 +1414,8 @@ namespace SqlSugar
             {
                 SqlWhereString = Regex.Replace(SqlWhereString, @"^\s*(and|where)\s*", "", RegexOptions.IgnoreCase);
             }
-            string sql = string.Format("DELETE FROM {0} WHERE 1=1 AND {1}", typeName, SqlWhereString);
-            bool isSuccess = ExecuteCommand(sql, pars.ToArray()) > 0;
+            string sql = string.Format("DELETE FROM {0} WHERE 1=1 AND {1}", typeName.GetTranslationSqlName(), SqlWhereString);
+            bool isSuccess = base.ExecuteCommand(sql, pars.ToArray()) > 0;
             return isSuccess;
         }
 
@@ -1421,7 +1426,7 @@ namespace SqlSugar
         /// <typeparam name="FiledType">主键类型</typeparam>
         /// <param name="whereIn">主键集合</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T, FiledType>(params FiledType[] whereIn)
+        public bool Delete<T, FiledType>(params FiledType[] whereIn) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
@@ -1435,7 +1440,7 @@ namespace SqlSugar
             if (whereIn != null && whereIn.Length > 0)
             {
                 string sql = string.Format("DELETE FROM {0} WHERE {1} IN ({2})", typeName.GetTranslationSqlName(), SqlSugarTool.GetPrimaryKeyByTableName(this, typeName).GetTranslationSqlName(), whereIn.ToJoinSqlInVal());
-                int deleteRowCount = ExecuteCommand(sql);
+                int deleteRowCount = base.ExecuteCommand(sql);
                 isSuccess = deleteRowCount > 0;
             }
             return isSuccess;
@@ -1449,7 +1454,7 @@ namespace SqlSugar
         /// <param name="expression">表达式条件</param>
         /// <param name="whereIn">批定列值的集合</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T, FiledType>(Expression<Func<T, object>> expression, List<FiledType> whereIn)
+        public bool Delete<T, FiledType>(Expression<Func<T, object>> expression, List<FiledType> whereIn) where T : class
         {
             InitAttributes<T>();
             if (whereIn == null) return false;
@@ -1464,7 +1469,7 @@ namespace SqlSugar
         /// <param name="expression">表达式条件</param>
         /// <param name="whereIn">批定列值的集合</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T, FiledType>(Expression<Func<T, object>> expression, params FiledType[] whereIn)
+        public bool Delete<T, FiledType>(Expression<Func<T, object>> expression, params FiledType[] whereIn) where T : class
         {
             InitAttributes<T>();
             ResolveExpress re = new ResolveExpress();
@@ -1480,7 +1485,7 @@ namespace SqlSugar
             if (whereIn != null && whereIn.Length > 0)
             {
                 string sql = string.Format("DELETE FROM {0} WHERE {1} IN ({2})", typeName.GetTranslationSqlName(), fieldName.GetTranslationSqlName(), whereIn.ToJoinSqlInVal());
-                int deleteRowCount = ExecuteCommand(sql);
+                int deleteRowCount = base.ExecuteCommand(sql);
                 isSuccess = deleteRowCount > 0;
             }
             return isSuccess;
@@ -1494,7 +1499,7 @@ namespace SqlSugar
         /// <param name="field">标识删除的字段</param>
         /// <param name="whereIn">主键集合</param>
         /// <returns>将field的值更新为1,则返回true表示状态删除成功</returns>
-        public bool FalseDelete<T, FiledType>(string field, params FiledType[] whereIn)
+        public bool FalseDelete<T, FiledType>(string field, params FiledType[] whereIn) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
@@ -1508,7 +1513,7 @@ namespace SqlSugar
             if (whereIn != null && whereIn.Length > 0)
             {
                 string sql = string.Format("UPDATE  {0} SET {3}=1 WHERE {1} IN ({2})", typeName.GetTranslationSqlName(), SqlSugarTool.GetPrimaryKeyByTableName(this, typeName), whereIn.ToJoinSqlInVal(), field);
-                int deleteRowCount = ExecuteCommand(sql);
+                int deleteRowCount = base.ExecuteCommand(sql);
                 isSuccess = deleteRowCount > 0;
             }
             return isSuccess;
@@ -1521,7 +1526,7 @@ namespace SqlSugar
         /// <param name="field">标识删除的字段</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>将field的值更新为1,则返回true表示状态删除成功</returns>
-        public bool FalseDelete<T>(string field, Expression<Func<T, bool>> expression)
+        public bool FalseDelete<T>(string field, Expression<Func<T, bool>> expression) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
@@ -1544,7 +1549,7 @@ namespace SqlSugar
             ResolveExpress re = new ResolveExpress();
             re.ResolveExpression(re, expression, this);
             string sql = string.Format("UPDATE  {0} SET {1}=1 WHERE  1=1 {2}", typeName.GetTranslationSqlName(), field, re.SqlWhere);
-            int deleteRowCount = ExecuteCommand(sql, re.Paras.ToArray());
+            int deleteRowCount = base.ExecuteCommand(sql, re.Paras.ToArray());
             isSuccess = deleteRowCount > 0;
             return isSuccess;
         }
