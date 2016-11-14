@@ -185,7 +185,7 @@ namespace SqlSugar
         /// 添加禁止更新列
         /// </summary>
         /// <param name="columns"></param>
-        public void AddDisableUpdateColumn(params string[] columns)
+        public void AddDisableUpdateColumns(params string[] columns)
         {
 
             this.DisableUpdateColumns = this.DisableUpdateColumns.ArrayAdd(columns);
@@ -229,7 +229,7 @@ namespace SqlSugar
         /// 设置过滤器（用户权限过滤）
         /// </summary>
         /// <param name="filterRows">参数Dictionary string 为过滤器的名称 , Dictionary Func&lt;KeyValueObj&gt; 为过滤函数 (KeyValueObj 中的 Key为Sql条件,Value为Sql参数)</param>
-        public void SetFilterFilterParas(Dictionary<string, Func<KeyValueObj>> filterRows)
+        public void SetFilterItems(Dictionary<string, Func<KeyValueObj>> filterRows)
         {
             _filterRows = filterRows;
         }
@@ -238,7 +238,7 @@ namespace SqlSugar
         /// 设置过滤器（用户权限过滤）
         /// </summary>
         /// <param name="filterColumns">参数Dictionary string 为过滤器的名称 , Dictionary List&lt;string&gt;为允许查询的列的集合</param>
-        public void SetFilterFilterParas(Dictionary<string, List<string>> filterColumns)
+        public void SetFilterItems(Dictionary<string, List<string>> filterColumns)
         {
             if (filterColumns.Values == null || filterColumns.Values.Count == 0)
             {
@@ -288,12 +288,12 @@ namespace SqlSugar
         /// <summary>
         /// 添加实体字段与数据库字段的映射，Key为实体字段 Value为表字段名称 （注意：不区分表，设置后所有表通用）
         /// </summary>
-        /// <param name="mappingColumns"></param>
-        public void AddMappingColum(KeyValue mappingColumns)
+        /// <param name="mappingColumn"></param>
+        public void AddMappingColumn(KeyValue mappingColumn)
         {
-            Check.ArgumentNullException(mappingColumns, "AddMappingTables.mappingColumns不能为null。");
-            Check.Exception(_mappingColumns.Any(it => it.Key == mappingColumns.Key), "mappingColumns的Key已经存在。");
-            _mappingColumns.Add(mappingColumns);
+            Check.ArgumentNullException(mappingColumn, "AddMappingTables.mappingColumns不能为null。");
+            Check.Exception(_mappingColumns.Any(it => it.Key == mappingColumn.Key), "mappingColumns的Key已经存在。");
+            _mappingColumns.Add(mappingColumn);
             string cacheKey = "SqlSugarClient.InitAttributes";
             var cm = CacheManager<List<KeyValue>>.GetInstance();
             cm.Add(cacheKey, _mappingColumns, cm.Day);
@@ -310,6 +310,11 @@ namespace SqlSugar
                 _serialNumber = serNum;
             }
         }
+
+        /// <summary>
+        /// 在同一个会话中可以存储一些临时数据
+        /// </summary>
+        public object TempDate = null;
         #endregion
 
 
@@ -1400,21 +1405,21 @@ namespace SqlSugar
         /// 根据Where字符串删除
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="SqlWhereString">不包含Where的字符串</param>
+        /// <param name="sqlWhereString">不包含Where的字符串</param>
         /// <param name="whereObj">匿名参数(例如:new{id=1,name="张三"})</param>
         /// <returns>删除成功返回true</returns>
-        public bool Delete<T>(string SqlWhereString, object whereObj = null) where T : class
+        public bool Delete<T>(string sqlWhereString, object whereObj = null) where T : class
         {
             InitAttributes<T>();
             Type type = typeof(T);
             string typeName = type.Name;
             typeName = GetTableNameByClassType(typeName);
             var pars = SqlSugarTool.GetParameters(whereObj).ToList();
-            if (SqlWhereString.IsValuable())
+            if (sqlWhereString.IsValuable())
             {
-                SqlWhereString = Regex.Replace(SqlWhereString, @"^\s*(and|where)\s*", "", RegexOptions.IgnoreCase);
+                sqlWhereString = Regex.Replace(sqlWhereString, @"^\s*(and|where)\s*", "", RegexOptions.IgnoreCase);
             }
-            string sql = string.Format("DELETE FROM {0} WHERE 1=1 AND {1}", typeName.GetTranslationSqlName(), SqlWhereString);
+            string sql = string.Format("DELETE FROM {0} WHERE 1=1 AND {1}", typeName.GetTranslationSqlName(), sqlWhereString);
             bool isSuccess = base.ExecuteCommand(sql, pars.ToArray()) > 0;
             return isSuccess;
         }
