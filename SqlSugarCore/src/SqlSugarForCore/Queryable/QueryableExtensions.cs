@@ -786,6 +786,7 @@ namespace SqlSugar
             }
             sbSql.AppendFormat("SELECT COUNT({3})  FROM {0} {1} " + joinInfo + " WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), "1", queryable.GroupByValue.GetGroupBy());
             var count = queryable.DB.GetInt(sbSql.ToString(), queryable.Params.ToArray());
+            queryable.SelectValue = null;
             return count;
         }
 
@@ -876,7 +877,13 @@ namespace SqlSugar
         {
             StringBuilder sbSql = SqlSugarTool.GetQueryableSql<T>(queryable);
             var reader = queryable.DB.GetReader(sbSql.ToString(), queryable.Params.ToArray());
-            var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), reader, queryable.SelectValue.GetSelectFiles());
+            string fields = queryable.SelectValue.GetSelectFiles();
+            if (queryable.JoinTableValue.IsValuable())
+            {
+                fields += string.Join("", queryable.JoinTableValue.Count);
+             }
+            var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), reader, fields);
+            queryable.SelectValue = null;
             queryable = null;
             sbSql = null;
             return reval;

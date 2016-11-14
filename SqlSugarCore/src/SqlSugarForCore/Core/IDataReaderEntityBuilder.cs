@@ -108,7 +108,12 @@ namespace SqlSugar
                             dbFieldName = classFieldName;
                         }
                     }
-                    PropertyInfo propertyInfo = type.GetProperty(dbFieldName);
+                //实体类的字段名与数据库大小写不一致可以映射
+                if (!tFieldNames.Any(it => it == dbFieldName) && tFieldNames.Any(it => it.ToLower() == dbFieldName.ToLower()))
+                {
+                    dbFieldName = tFieldNames.Single(it => it.ToLower() == dbFieldName.ToLower());
+                }
+                PropertyInfo propertyInfo = type.GetProperty(dbFieldName);
                     Label endIfLabel = generator.DefineLabel();
                     if (propertyInfo != null && propertyInfo.GetSetMethod() != null)
                     {
