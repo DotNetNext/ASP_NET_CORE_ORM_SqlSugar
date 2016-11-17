@@ -108,12 +108,12 @@ namespace SqlSugar
                             dbFieldName = classFieldName;
                         }
                     }
-                //实体类的字段名与数据库大小写不一致可以映射
-                if (!tFieldNames.Any(it => it == dbFieldName) && tFieldNames.Any(it => it.ToLower() == dbFieldName.ToLower()))
-                {
-                    dbFieldName = tFieldNames.Single(it => it.ToLower() == dbFieldName.ToLower());
-                }
-                PropertyInfo propertyInfo = type.GetProperty(dbFieldName);
+                    //实体类的字段名与数据库大小写不一致可以映射
+                    if (!tFieldNames.Any(it => it == dbFieldName) && tFieldNames.Any(it => it.ToLower() == dbFieldName.ToLower()))
+                    {
+                        dbFieldName = tFieldNames.Single(it => it.ToLower() == dbFieldName.ToLower());
+                    }
+                    PropertyInfo propertyInfo = type.GetProperty(dbFieldName);
                     Label endIfLabel = generator.DefineLabel();
                     if (propertyInfo != null && propertyInfo.GetSetMethod() != null)
                     {
@@ -176,7 +176,7 @@ namespace SqlSugar
             {
                 typeName = "ENUMNAME";
             }
-            else if (dbTypeName.Contains("hierarchyid") || typeName == "byte[]" || objTypeName == "object")
+            else if (dbTypeName.Contains("hierarchyid") || typeName == "byte[]" || objTypeName == "object" )
             {
                 generator.Emit(OpCodes.Call, getValueMethod);
                 generator.Emit(OpCodes.Unbox_Any, pro.PropertyType);//找不到类型才执行拆箱（类型转换）

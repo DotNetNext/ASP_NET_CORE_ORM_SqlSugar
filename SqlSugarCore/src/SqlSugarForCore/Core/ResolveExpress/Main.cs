@@ -64,7 +64,7 @@ namespace SqlSugar
         {
             ResolveExpress.MemberType type = ResolveExpress.MemberType.None;
             //解析表达式
-            this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type, true));
+            this.SqlWhere = string.Format(" AND {0} ", re.CreateSqlElements(exp, ref type,true));
             //还原bool值
             foreach (var item in ConstantBoolDictionary)
             {
@@ -80,7 +80,7 @@ namespace SqlSugar
         /// 递归解析表达式路由计算
         /// </summary>
         /// <returns></returns>
-        private string CreateSqlElements(Expression exp, ref MemberType type, bool isTure, bool? isComparisonOperator = null)
+        private string CreateSqlElements(Expression exp, ref MemberType type, bool isTure, bool? isComparisonOperator=null)
         {
             //主入口
             if (exp is LambdaExpression)
@@ -93,11 +93,11 @@ namespace SqlSugar
             }
             else if (exp is BlockExpression)
             {
-                throw new SqlSugarException("表达式不支持解析BlockExpression,错误信息:" + exp.ToString());
+                throw new SqlSugarException(ExpBlockExpression + exp.ToString());
             }
             else if (exp is ConditionalExpression)
             {
-                throw new SqlSugarException("表达式不支解析ConditionalExpression,错误信息:" + exp.ToString());
+                throw new SqlSugarException(ExpConditionalExpression + exp.ToString());
             }
             else if (exp is MethodCallExpression)
             {
@@ -105,11 +105,11 @@ namespace SqlSugar
             }
             else if (exp is ConstantExpression)
             {
-                return ConstantExpression(exp, ref type, isComparisonOperator);
+                return ConstantExpression(exp, ref type,isComparisonOperator);
             }
             else if (exp is MemberExpression)
             {
-                return MemberExpression(ref exp, ref type, isComparisonOperator);
+                return MemberExpression(ref exp, ref type,isComparisonOperator);
             }
             else if (exp is UnaryExpression)
             {
@@ -117,7 +117,7 @@ namespace SqlSugar
             }
             else if (exp != null && exp.NodeType.IsIn(ExpressionType.New, ExpressionType.NewArrayBounds, ExpressionType.NewArrayInit))
             {
-                throw new SqlSugarException("拉姆达表达式内不支持new对象，请提取变量后在赋值，错误信息" + exp.ToString());
+                throw new SqlSugarException(ExpNew+ exp.ToString());
             }
             return null;
         }
@@ -132,7 +132,7 @@ namespace SqlSugar
         {
             var conExp = me.Expression as ConstantExpression;
             var fieldInfo = me.Member as System.Reflection.FieldInfo;
-            if (conExp != null && fieldInfo != null)
+            if (conExp != null&&fieldInfo!=null)
             {
                 dynInv = (fieldInfo).GetValue((me.Expression as ConstantExpression).Value);
             }
@@ -167,7 +167,7 @@ namespace SqlSugar
                                 }
                                 if (fieInfo == null && proInfo == null)
                                 {
-                                    throw new SqlSugarException("拉姆达解析不支持" + dynInv.GetType().FullName + "对象，或该" + dynInv.GetType().FullName + "的属性。");
+                                    throw new SqlSugarException(string.Format(ExpNoSupportObjectOrAttr, dynInv.GetType().FullName, dynInv.GetType().FullName));
                                 }
                             }
                             return;
@@ -176,22 +176,19 @@ namespace SqlSugar
                         {
                             FieldInfo field = (FieldInfo)memberExpr.Member;
                             dynInv = field.GetValue(memberExpr.Member);
-                            if (dynInv != null && dynInv.GetType().IsClass())
-                            {
+                            if (dynInv != null && dynInv.GetType().IsClass()) {
                                 var fieldName = me.Member.Name;
                                 var proInfo = dynInv.GetType().GetProperty(fieldName);
-                                if (proInfo != null)
-                                {
-                                    dynInv = proInfo.GetValue(dynInv, null);
+                                if (proInfo != null) {
+                                    dynInv=proInfo.GetValue(dynInv,null);
                                 }
                                 var fieInfo = dynInv.GetType().GetField(fieldName);
-                                if (fieInfo != null)
-                                {
+                                if (fieInfo != null) {
                                     dynInv = fieInfo.GetValue(dynInv);
                                 }
                                 if (fieInfo == null && proInfo == null)
                                 {
-                                    throw new SqlSugarException("拉姆达解析不支持" + dynInv.GetType().FullName + "对象，或该" + dynInv.GetType().FullName + "的属性。");
+                                    throw new SqlSugarException(string.Format(ExpNoSupportObjectOrAttr, dynInv.GetType().FullName, dynInv.GetType().FullName));
                                 }
                             }
                             return;
@@ -208,8 +205,7 @@ namespace SqlSugar
 
                 // fetch the root object reference:
                 var constExpr = exp as ConstantExpression;
-                if (constExpr == null)
-                {
+                if (constExpr == null) {
                     dynInv = ExpErrorUniqueKey;
                     return;
                 }
@@ -221,9 +217,8 @@ namespace SqlSugar
                     var mi = memberInfos.Pop();
                     if (mi.MemberType == MemberTypes.Property)
                     {
-                        var objProp = objReference.GetType().GetProperty(mi.Name);
-                        if (objProp == null)
-                        {
+                        var objProp= objReference.GetType().GetProperty(mi.Name);
+                        if (objProp == null) {
                             dynInv = ExpErrorUniqueKey;
                             return;
                         }
@@ -231,9 +226,8 @@ namespace SqlSugar
                     }
                     else if (mi.MemberType == MemberTypes.Field)
                     {
-                        var objField = objReference.GetType().GetField(mi.Name);
-                        if (objField == null)
-                        {
+                        var objField=objReference.GetType().GetField(mi.Name);
+                        if (objField == null) {
                             dynInv = ExpErrorUniqueKey;
                             return;
                         }
