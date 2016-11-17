@@ -131,7 +131,7 @@ namespace SqlSugar
         /// <param name="obj"></param>
         /// <param name="pis"></param>
         /// <returns></returns>
-        public static SqlParameter[] GetParameters(object obj, PropertyInfo[] pis = null)
+        public static SqlParameter[] GetParameters(object obj,PropertyInfo [] pis=null)
         {
             List<SqlParameter> listParams = new List<SqlParameter>();
             if (obj != null)
@@ -169,9 +169,8 @@ namespace SqlSugar
                     {
                         propertiesObj = pis;
                     }
-                    else
-                    {
-                        propertiesObj = type.GetProperties();
+                    else {
+                        propertiesObj=type.GetProperties();
                     }
                     string replaceGuid = Guid.NewGuid().ToString();
                     foreach (PropertyInfo r in propertiesObj)
@@ -179,9 +178,9 @@ namespace SqlSugar
                         var value = r.GetValue(obj, null);
                         if (r.PropertyType.IsEnum())
                         {
-                            value = (int)value;
+                            value = value.ObjToInt();
                         }
-                        if (value == null||value.Equals(DateTime.MinValue)) value = DBNull.Value;
+                        if (value == null || value.Equals(DateTime.MinValue)) value = DBNull.Value;
                         if (r.Name.ToLower().Contains("hierarchyid"))
                         {
                             var par = new SqlParameter("@" + r.Name, SqlDbType.Udt);
@@ -308,7 +307,7 @@ namespace SqlSugar
             PropertyInfo propertyInfo = obj.GetType().GetProperty(property);
             return (Guid)propertyInfo.GetValue(obj, null);
         }
-
+  
         /// <summary>
         /// 使用页面自动填充sqlParameter时 Request.Form出现特殊字符时可以重写Request.Form方法，使用时注意加锁并且用到将该值设为null
         /// </summary>
