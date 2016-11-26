@@ -155,10 +155,10 @@ namespace SqlSugar
         public static Queryable<T> In<T>(this Queryable<T> queryable, params object[] pkValues)
         {
             Check.Exception(pkValues == null || pkValues.Length == 0, "In.pkValues的Count不能为0");
-            var type=pkValues[0].GetType();
+            var type = pkValues[0].GetType();
             var childIsArray = pkValues[0].GetType().IsArray;
-            var isList=type!=SqlSugarTool.IntType&&type!=SqlSugarTool.GuidType&&type.FullName.IsCollectionsList();
-            if (isList||childIsArray)
+            var isList = type != SqlSugarTool.IntType && type != SqlSugarTool.GuidType && type.FullName.IsCollectionsList();
+            if (isList || childIsArray)
             {
                 var newList = new List<object>();
                 foreach (var item in (IEnumerable)pkValues[0])
@@ -378,7 +378,7 @@ namespace SqlSugar
         /// <typeparam name="T">表实体类型</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <returns>T</returns>
-        public static T Single<T>(this  Queryable<T> queryable)
+        public static T Single<T>(this Queryable<T> queryable)
         {
             if (queryable.OrderByValue.IsNullOrEmpty())
             {
@@ -395,7 +395,7 @@ namespace SqlSugar
         /// <typeparam name="T">表实体类型</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <returns>T</returns>
-        public static T SingleOrDefault<T>(this  Queryable<T> queryable)
+        public static T SingleOrDefault<T>(this Queryable<T> queryable)
         {
             if (queryable.OrderByValue.IsNullOrEmpty())
             {
@@ -418,7 +418,7 @@ namespace SqlSugar
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>T</returns>
-        public static T Single<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static T Single<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -436,7 +436,7 @@ namespace SqlSugar
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>T</returns>
-        public static T SingleOrDefault<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static T SingleOrDefault<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -453,7 +453,7 @@ namespace SqlSugar
         /// <typeparam name="T">表实体类型</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <returns>T</returns>
-        public static T First<T>(this  Queryable<T> queryable)
+        public static T First<T>(this Queryable<T> queryable)
         {
             if (queryable.OrderByValue.IsNullOrEmpty())
             {
@@ -471,7 +471,7 @@ namespace SqlSugar
         /// <typeparam name="T">表实体类型</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <returns>T</returns>
-        public static T FirstOrDefault<T>(this  Queryable<T> queryable)
+        public static T FirstOrDefault<T>(this Queryable<T> queryable)
         {
             if (queryable.OrderByValue.IsNullOrEmpty())
             {
@@ -494,7 +494,7 @@ namespace SqlSugar
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>T</returns>
-        public static T First<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static T First<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
 
             var type = queryable.Type;
@@ -513,7 +513,7 @@ namespace SqlSugar
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>T</returns>
-        public static T FirstOrDefault<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static T FirstOrDefault<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
 
             var type = queryable.Type;
@@ -533,7 +533,7 @@ namespace SqlSugar
         /// <param name="queryable">查询对象</param>
         /// <param name="expression">表达式条件</param>
         /// <returns>count>0返回true</returns>
-        public static bool Any<T>(this  Queryable<T> queryable, Expression<Func<T, bool>> expression)
+        public static bool Any<T>(this Queryable<T> queryable, Expression<Func<T, bool>> expression)
         {
             var type = queryable.Type;
             queryable.WhereIndex = queryable.WhereIndex + 100;
@@ -550,7 +550,7 @@ namespace SqlSugar
         /// <typeparam name="T">表实体类型</typeparam>
         /// <param name="queryable">查询对象</param>
         /// <returns>count>0返回true</returns>
-        public static bool Any<T>(this  Queryable<T> queryable)
+        public static bool Any<T>(this Queryable<T> queryable)
         {
             return queryable.Count() > 0;
         }
@@ -580,7 +580,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
+            ResolveSelect.GetResult<TResult>(expStr, reval, expression);
             return reval;
         }
 
@@ -610,7 +610,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
+            ResolveSelect.GetResult<TResult>(expStr, reval, expression);
             return reval;
         }
 
@@ -641,7 +641,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
+            ResolveSelect.GetResult<TResult>(expStr, reval, expression);
             return reval;
         }
 
@@ -673,7 +673,7 @@ namespace SqlSugar
                 GroupByValue = queryable.GroupByValue,
                 JoinTableValue = queryable.JoinTableValue
             };
-            ResolveSelect.GetResult<TResult>(expStr, reval,expression);
+            ResolveSelect.GetResult<TResult>(expStr, reval, expression);
             return reval;
         }
 
@@ -703,12 +703,16 @@ namespace SqlSugar
             };
             if (queryable.JoinTableValue.IsValuable())
             {
-                ResolveSelect.GetResult<TResult>(expStr, reval,expression);
+                ResolveSelect.GetResult<TResult>(expStr, reval, expression);
             }
             else
             {
                 reval.SelectValue = expStr;
-                ResolveSelect.GetResult<TResult>(reval,expression);
+                ResolveSelect.GetResult<TResult>(reval, expression);
+                if (reval.SelectValue.IsNullOrEmpty())
+                {
+                    reval.SelectValue = new ResolveExpress().GetExpressionRightField(expression, reval.DB);
+                }
             }
             return reval;
         }
@@ -781,7 +785,8 @@ namespace SqlSugar
             StringBuilder sbSql = new StringBuilder();
             string joinInfo = string.Join(" ", queryable.JoinTableValue);
             string withNoLock = queryable.DB.IsNoLock ? "WITH(NOLOCK)" : null;
-            if (queryable.JoinTableValue.IsValuable()) {
+            if (queryable.JoinTableValue.IsValuable())
+            {
                 withNoLock = null;
             }
             var tableName = queryable.TName;
@@ -882,8 +887,9 @@ namespace SqlSugar
         {
             StringBuilder sbSql = SqlSugarTool.GetQueryableSql<T>(queryable);
             var reader = queryable.DB.GetReader(sbSql.ToString(), queryable.Params.ToArray());
-            string fields=queryable.SelectValue.GetSelectFiles();
-            if(queryable.JoinTableValue.IsValuable()){
+            string fields = queryable.SelectValue.GetSelectFiles();
+            if (queryable.JoinTableValue.IsValuable())
+            {
                 fields += string.Join("", queryable.JoinTableValue.Count);
             }
             var reval = SqlSugarTool.DataReaderToList<T>(typeof(T), reader, fields);
@@ -1031,7 +1037,7 @@ namespace SqlSugar
         /// <param name="pageIndex">当前页码</param>
         /// <param name="pageSize">每页显示数量</param>
         /// <returns>DataTable</returns>
-        public static DataTable ToDataTablePage<T>(this Queryable<T> queryable,int pageIndex,int pageSize)
+        public static DataTable ToDataTablePage<T>(this Queryable<T> queryable, int pageIndex, int pageSize)
         {
             if (queryable.OrderByValue.IsNullOrEmpty())
             {
@@ -1094,7 +1100,7 @@ namespace SqlSugar
         /// <param name="pageSize">每页显示数量</param>
         /// <param name="pageCount">pageCount无需赋值，函数执行完自动赋值</param>
         /// <returns>T的集合</returns>
-        public static List<T> ToPageList<T>(this Queryable<T> queryable, int pageIndex, int pageSize,ref int pageCount)
+        public static List<T> ToPageList<T>(this Queryable<T> queryable, int pageIndex, int pageSize, ref int pageCount)
         {
             var reval = queryable.ToPageList(pageIndex, pageSize);
             pageCount = queryable.Count();
@@ -1180,8 +1186,9 @@ namespace SqlSugar
             var exLeftStr = Regex.Match(expression.ToString(), @"\((.+?)\).+").Groups[1].Value;
             var exLeftArray = exLeftStr.Split(',');
             var shortName1 = exLeftArray[1];
-            if (shortName1.IsValuable()) {
-                shortName1 = shortName1 +" "+ queryable.DB.IsNoLock.GetLockString();
+            if (shortName1.IsValuable())
+            {
+                shortName1 = shortName1 + " " + queryable.DB.IsNoLock.GetLockString();
             }
             var shortName2 = exLeftArray[2];
             if (shortName2.IsValuable())
