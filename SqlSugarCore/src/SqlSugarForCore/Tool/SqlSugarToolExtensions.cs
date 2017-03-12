@@ -52,11 +52,7 @@ namespace SqlSugar
         {
             if (!value.IsNullOrEmpty())
             {
-                if (Regex.IsMatch(value, @"%\d|0x\d|0x[0-9,a-z]{6,300}|(\@.*\=)", RegexOptions.IgnoreCase))
-                {
-                    throw new SqlSugarException("查询参数不允许存在特殊字符。");
-                }
-                value = value.Replace("'", "''");
+                value = value.Replace("'", "''");//转释单引号
             }
             return value;
         }
@@ -68,11 +64,8 @@ namespace SqlSugar
         public static string ToSuperSqlFilter(this string value)
         {
             if (value.IsNullOrEmpty()) return value;
-            if (Regex.IsMatch(value, @"^(\w|\.|\:|\-| |\,)+$"))
-            {
-                return value;
-            }
-            throw new SqlSugarException("指定类型(只允许输入指定字母、数字、下划线、时间、guid)。");
+            value = value.Replace("'", "''");//转释单引号
+            return value;
         }
 
         /// <summary>

@@ -820,6 +820,9 @@ namespace SqlSugar
             }
             sbSql.AppendFormat("SELECT MAX({3})  FROM {0} {1} WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), maxField, queryable.GroupByValue.GetGroupBy());
             var objValue = queryable.DB.GetScalar(sbSql.ToString(), queryable.Params.ToArray());
+            if (objValue == DBNull.Value) {
+                return default(TResult);
+            }
             var reval = Convert.ChangeType(objValue, typeof(TResult));
             return (TResult)reval;
         }
@@ -858,6 +861,10 @@ namespace SqlSugar
             }
             sbSql.AppendFormat("SELECT MIN({3})  FROM {0} {1} WHERE 1=1 {2} {4} ", tableName.GetTranslationSqlName(), withNoLock, string.Join("", queryable.WhereValue), minField, queryable.GroupByValue.GetGroupBy());
             var objValue = queryable.DB.GetScalar(sbSql.ToString(), queryable.Params.ToArray());
+            if (objValue == DBNull.Value)
+            {
+                return default(TResult);
+            }
             var reval = Convert.ChangeType(objValue, typeof(TResult));
             return (TResult)reval;
         }
