@@ -1,5 +1,5 @@
 
-#  New version address https://github.com/sunkaixuan/SqlSugar
+# 本仓储过期 ，看新地址： https://github.com/sunkaixuan/SqlSugar
 
 ## The current version is no longer maintained. The address above is the new GIT address
 
